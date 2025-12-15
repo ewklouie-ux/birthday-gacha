@@ -4,90 +4,81 @@
 <meta charset="UTF-8">
 <title>Birthday Banner</title>
 <style>
-body { font-family: sans-serif; background: #111; color: #fff; text-align:center; }
+body { font-family:sans-serif; background:#111; color:#fff; text-align:center; }
 #rollButton { padding:10px 20px; font-size:18px; margin:20px; cursor:pointer; }
-.roll-container { display:flex; justify-content:center; flex-wrap:wrap; margin:20px; }
-.roll-card { width:80px; height:100px; margin:5px; display:flex; align-items:center; justify-content:center; border-radius:10px; background:#222; font-weight:bold; font-size:18px; transition: transform 0.2s;}
-.roll-card.common { border:2px solid #888; }
-.roll-card.rare { border:2px solid #1e90ff; }
-.roll-card.epic { border:2px solid #a020f0; }
-.roll-card.legendary { border:2px solid #ffd700; animation: glow 1s infinite alternate; }
-@keyframes glow { 0% { box-shadow: 0 0 5px #ffd700; } 100% { box-shadow: 0 0 20px #ffd700; } }
-#history { max-height:300px; overflow-y:auto; margin-top:20px; text-align:left; padding:0 20px; border-top:1px solid #444;}
+#rollDisplay { width:300px; height:150px; margin:20px auto; border-radius:15px; background:#222; display:flex; align-items:center; justify-content:center; font-size:22px; transition: all 0.3s ease; }
+#rollDisplay.common { border:2px solid #888; }
+#rollDisplay.rare { border:2px solid #1e90ff; animation: glow 1s infinite alternate; }
+#rollDisplay.epic { border:2px solid #a020f0; animation: glow 1s infinite alternate; }
+#rollDisplay.legendary { border:3px solid #ffd700; animation: glowLegend 1s infinite alternate; font-weight:bold; font-size:26px; }
+@keyframes glow { 0% { box-shadow:0 0 5px #fff; } 100% { box-shadow:0 0 15px #1e90ff; } }
+@keyframes glowLegend { 0% { box-shadow:0 0 10px #ffd700; } 100% { box-shadow:0 0 25px #ffd700; } }
+#history { max-height:250px; overflow-y:auto; margin-top:20px; text-align:left; padding:0 20px; border-top:1px solid #444;}
 </style>
 </head>
 <body>
 
 <h1>Birthday Banner</h1>
 <button id="rollButton">Roll 10x</button>
-<div class="roll-container" id="rollContainer"></div>
+<div id="rollDisplay" class="common">Press Roll</div>
 <div id="history"></div>
 
 <script>
 let rollCount = 0;
 let pityCounter = 0;
-const hardPity = 50; // guaranteed Legendary if not hit by 50th roll
-const rollContainer = document.getElementById('rollContainer');
+const hardPity = 50;
+const rollDisplay = document.getElementById('rollDisplay');
 const history = document.getElementById('history');
 
 const pools = {
-  common: ['1 kiss', 'hand-hold 2 min', 'compliment', 'photo together', 'sit closer'],
-  rare: ['write a short note', 'choose next snack', 'extended cuddle', '5-min photo session'],
-  epic: ['prepared mini gift', '10-min massage', 'surprise drink', 'scenic stop'],
-  legendary: ['main birthday gift', 'deep handwritten letter']
+  common: ['1 kiss','3 kisses','hand-hold 2 min','compliment','photo together','sit closer','whisper something sweet'],
+  rare: ['write a short note','choose next snack','extended cuddle','5-min photo session','memory prompt'],
+  epic: ['prepared mini gift','10-min massage','surprise drink','scenic stop'],
+  legendary: ['main birthday gift','deep handwritten letter']
 };
 
-function getRandomFromPool(rarity) {
+function getRandomFromPool(rarity){
   const items = pools[rarity];
-  return items[Math.floor(Math.random() * items.length)];
+  return items[Math.floor(Math.random()*items.length)];
 }
 
-function rollOnce() {
+function rollOnce(){
   rollCount++;
   pityCounter++;
-  let rarityRoll = Math.random() * 100;
+  let rollVal = Math.random()*100;
   let rarity;
 
-  if (pityCounter >= hardPity) rarityRoll = 100; // force Legendary
+  if(pityCounter>=hardPity) rollVal = 100; // force Legendary
 
-  if (rarityRoll <= 70) rarity = 'common';
-  else if (rarityRoll <= 90) rarity = 'rare';
-  else if (rarityRoll <= 99) rarity = 'epic';
-  else rarity = 'legendary';
+  if(rollVal <= 70) rarity='common';
+  else if(rollVal <= 90) rarity='rare';
+  else if(rollVal <= 99) rarity='epic';
+  else rarity='legendary';
 
-  if (rarity === 'legendary') pityCounter = 0; // reset pity
+  if(rarity==='legendary') pityCounter=0;
 
-  const reward = getRandomFromPool(rarity);
-  logRoll(rollCount, rarity, reward);
-  return {rarity, reward};
+  const reward=getRandomFromPool(rarity);
+  return {rarity,reward};
 }
 
-function logRoll(count, rarity, reward) {
-  const entry = document.createElement('div');
-  entry.textContent = `Roll ${count}: ${rarity.toUpperCase()} → ${reward}`;
-  history.appendChild(entry);
-  history.scrollTop = history.scrollHeight;
-}
-
-function animateRolls(times) {
-  rollContainer.innerHTML = '';
-  let i = 0;
-  const interval = setInterval(() => {
-    if (i >= times) {
-      clearInterval(interval);
-      return;
-    }
+function animateRoll(times){
+  let i=0;
+  function nextRoll(){
+    if(i>=times) return;
     const result = rollOnce();
-    const card = document.createElement('div');
-    card.className = 'roll-card ' + result.rarity;
-    card.textContent = result.rarity.toUpperCase();
-    rollContainer.appendChild(card);
+    rollDisplay.className = result.rarity;
+    rollDisplay.textContent = `${result.rarity.toUpperCase()} → ${result.reward}`;
+    const entry = document.createElement('div');
+    entry.textContent=`Roll ${rollCount}: ${result.rarity.toUpperCase()} → ${result.reward}`;
+    history.appendChild(entry);
+    history.scrollTop=history.scrollHeight;
     i++;
-  }, 250);
+    setTimeout(nextRoll,300);
+  }
+  nextRoll();
 }
 
-document.getElementById('rollButton').addEventListener('click', () => animateRolls(10));
+document.getElementById('rollButton').addEventListener('click',()=>animateRoll(10));
 </script>
-
 </body>
 </html>
