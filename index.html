@@ -104,6 +104,34 @@
       Legendary: ["Surprise Trip 💛"]
     };
 
+    /* =========================
+       LOGGING + COUNTERS
+       ========================= */
+
+    function getRollCount() {
+      return parseInt(localStorage.getItem("totalRolls") || "0");
+    }
+
+    function incrementRollCount() {
+      const newCount = getRollCount() + 1;
+      localStorage.setItem("totalRolls", newCount);
+      return newCount;
+    }
+
+    function getRollLog() {
+      return JSON.parse(localStorage.getItem("rollLog") || "[]");
+    }
+
+    function logRoll(entry) {
+      const log = getRollLog();
+      log.push(entry);
+      localStorage.setItem("rollLog", JSON.stringify(log));
+    }
+
+    /* =========================
+       RNG CORE
+       ========================= */
+
     function rollRarity() {
       const r = Math.random();
       if (r < 0.6) return "Common";
@@ -116,6 +144,10 @@
       return arr[Math.floor(Math.random() * arr.length)];
     }
 
+    /* =========================
+       ROLL x10 FLOW
+       ========================= */
+
     async function rollTen() {
       rollBtn.disabled = true;
       resultsDiv.innerHTML = "";
@@ -123,16 +155,28 @@
       for (let i = 0; i < 10; i++) {
         const rarity = rollRarity();
         const prize = randomFrom(pool[rarity]);
+        const rollNumber = incrementRollCount();
 
+        // LOG ROLL
+        logRoll({
+          rollNumber,
+          rarity,
+          prize,
+          timestamp: new Date().toISOString()
+        });
+
+        // UI CARD
         const card = document.createElement("div");
         card.className = `card ${rarity}`;
 
         card.innerHTML = `
-          <div class="rarity">${"★".repeat(
-            rarity === "Common" ? 1 :
-            rarity === "Rare" ? 2 :
-            rarity === "Epic" ? 4 : 5
-          )} ${rarity.toUpperCase()}</div>
+          <div class="rarity">
+            ${"★".repeat(
+              rarity === "Common" ? 1 :
+              rarity === "Rare" ? 2 :
+              rarity === "Epic" ? 4 : 5
+            )} ${rarity.toUpperCase()}
+          </div>
           <div class="prize">${prize}</div>
         `;
 
