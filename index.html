@@ -1,193 +1,240 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Birthday Banner 🎂</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Birthday Limited Banner</title>
 
-  <style>
-    body {
-      margin: 0;
-      padding: 0;
-      background: #0f1220;
-      color: white;
-      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      min-height: 100vh;
-    }
+<style>
+  body {
+    margin: 0;
+    background: #0b0d1a;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
 
-    h1 {
-      margin-top: 24px;
-      font-size: 1.4rem;
-      opacity: 0.9;
-    }
+  #app {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    text-align: center;
+  }
 
-    button {
-      margin: 16px;
-      padding: 14px 28px;
-      font-size: 1.1rem;
-      border-radius: 12px;
-      border: none;
-      background: linear-gradient(135deg, #7f5cff, #4b7bff);
-      color: white;
-      cursor: pointer;
-    }
+  h1 {
+    margin-bottom: 10px;
+  }
 
-    button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-    }
+  #result {
+    min-height: 120px;
+    margin: 20px 0;
+  }
 
-    #results {
-      width: 90%;
-      max-width: 420px;
-      margin-bottom: 40px;
-    }
+  .card {
+    margin: 6px 0;
+    padding: 12px;
+    border-radius: 14px;
+    background: #1a1d33;
+    animation: fadeIn 0.3s ease forwards;
+  }
 
-    .card {
-      margin: 10px 0;
-      padding: 14px;
-      border-radius: 14px;
-      background: #1a1d33;
-      box-shadow: 0 6px 14px rgba(0,0,0,0.4);
-      transform: translateY(20px);
-      opacity: 0;
-      animation: reveal 0.4s ease forwards;
-    }
+  .Common { border-left: 6px solid #b0b0b0; }
+  .Rare { border-left: 6px solid #4da6ff; }
+  .Epic { border-left: 6px solid #b066ff; }
+  .Legendary { border-left: 6px solid gold; }
 
-    @keyframes reveal {
-      to {
-        transform: translateY(0);
-        opacity: 1;
-      }
-    }
+  button {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1rem;
+    border-radius: 14px;
+    border: none;
+    background: #4f46e5;
+    color: white;
+    cursor: pointer;
+    margin-top: 10px;
+  }
 
-    .rarity {
-      font-size: 0.9rem;
-      letter-spacing: 1px;
-      opacity: 0.85;
-    }
+  button:active {
+    transform: scale(0.98);
+  }
 
-    .prize {
-      margin-top: 6px;
-      font-size: 1.05rem;
-      font-weight: 500;
-    }
+  #historyBtn {
+    background: #2a2e5a;
+  }
 
-    /* RARITY COLORS */
-    .Common { border-left: 6px solid #b0b0b0; }
-    .Rare { border-left: 6px solid #4da6ff; }
-    .Epic { border-left: 6px solid #b066ff; }
-    .Legendary {
-      border-left: 6px solid gold;
-      background: linear-gradient(135deg, #2a1f00, #1a1d33);
-    }
-  </style>
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* History Overlay */
+  #historyOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #0f1220;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  #historyOverlay h2 {
+    margin-top: 10px;
+  }
+
+  .history-item {
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 12px;
+    background: #1a1d33;
+  }
+
+</style>
 </head>
 
 <body>
-  <h1>Birthday Banner 🎂</h1>
-  <button id="rollBtn">Roll x10</button>
+<div id="app">
+  <h1>🎂 Limited Birthday Banner</h1>
+  <p>Tap to Roll ×10</p>
 
-  <div id="results"></div>
+  <div id="result"></div>
 
-  <script>
-    const rollBtn = document.getElementById("rollBtn");
-    const resultsDiv = document.getElementById("results");
+  <button id="rollBtn">🎲 Roll 10</button>
+  <button id="historyBtn">📜 History</button>
+</div>
 
-    const pool = {
-      Common: ["Hug Coupon", "Movie Pick", "Snack Date"],
-      Rare: ["Dinner Date", "Playlist Made For You"],
-      Epic: ["Full Day Together", "Custom Gift"],
-      Legendary: ["Surprise Trip 💛"]
-    };
+<!-- HISTORY OVERLAY -->
+<div id="historyOverlay">
+  <button id="closeHistory">Close</button>
+  <h2>Roll History</h2>
+  <div id="historyList"></div>
+</div>
 
-    /* =========================
-       LOGGING + COUNTERS
-       ========================= */
+<script>
+  const rollBtn = document.getElementById("rollBtn");
+  const resultDiv = document.getElementById("result");
 
-    function getRollCount() {
-      return parseInt(localStorage.getItem("totalRolls") || "0");
+  const historyBtn = document.getElementById("historyBtn");
+  const historyOverlay = document.getElementById("historyOverlay");
+  const historyList = document.getElementById("historyList");
+  const closeHistory = document.getElementById("closeHistory");
+
+  const STORAGE_KEY = "birthday_roll_log";
+
+  function getRollLog() {
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+  }
+
+  function saveRoll(entry) {
+    const log = getRollLog();
+    log.push(entry);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(log));
+  }
+
+  function rollOnce() {
+    const n = Math.floor(Math.random() * 100) + 1;
+    if (n <= 70) return "Common";
+    if (n <= 90) return "Rare";
+    if (n <= 99) return "Epic";
+    return "Legendary";
+  }
+
+  const rewardPools = {
+    Common: [
+      "1 kiss",
+      "3 kisses",
+      "Hand squeeze",
+      "Compliment",
+      "Sit closer",
+      "Eye contact moment",
+      "Choose next song"
+    ],
+    Rare: [
+      "Short handwritten note",
+      "Photo together",
+      "Choose next snack",
+      "Extended cuddle"
+    ],
+    Epic: [
+      "Prepared note",
+      "Small gift",
+      "10-minute massage",
+      "Surprise drink"
+    ],
+    Legendary: [
+      "Main Birthday Gift",
+      "Deep Handwritten Letter"
+    ]
+  };
+
+  function getReward(rarity) {
+    const pool = rewardPools[rarity];
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  rollBtn.addEventListener("click", async () => {
+    rollBtn.disabled = true;
+    resultDiv.innerHTML = "";
+
+    for (let i = 0; i < 10; i++) {
+      await new Promise(r => setTimeout(r, 250));
+
+      const rarity = rollOnce();
+      const reward = getReward(rarity);
+
+      const logEntry = {
+        rollNumber: getRollLog().length + 1,
+        rarity,
+        prize: reward,
+        timestamp: Date.now()
+      };
+
+      saveRoll(logEntry);
+
+      const card = document.createElement("div");
+      card.className = `card ${rarity}`;
+      card.innerHTML = `<strong>${rarity}</strong><br>${reward}`;
+      resultDiv.appendChild(card);
     }
 
-    function incrementRollCount() {
-      const newCount = getRollCount() + 1;
-      localStorage.setItem("totalRolls", newCount);
-      return newCount;
+    rollBtn.disabled = false;
+  });
+
+  historyBtn.addEventListener("click", () => {
+    historyOverlay.style.display = "block";
+    renderHistory();
+  });
+
+  closeHistory.addEventListener("click", () => {
+    historyOverlay.style.display = "none";
+  });
+
+  function renderHistory() {
+    const log = getRollLog().slice().reverse();
+    historyList.innerHTML = "";
+
+    if (log.length === 0) {
+      historyList.innerHTML = "<p>No rolls yet.</p>";
+      return;
     }
 
-    function getRollLog() {
-      return JSON.parse(localStorage.getItem("rollLog") || "[]");
+    for (const entry of log) {
+      const div = document.createElement("div");
+      div.className = `history-item ${entry.rarity}`;
+      div.innerHTML = `
+        <div><strong>#${entry.rollNumber}</strong> — ${entry.rarity}</div>
+        <div>${entry.prize}</div>
+        <div style="opacity:0.6;font-size:0.8rem;">
+          ${new Date(entry.timestamp).toLocaleString()}
+        </div>
+      `;
+      historyList.appendChild(div);
     }
-
-    function logRoll(entry) {
-      const log = getRollLog();
-      log.push(entry);
-      localStorage.setItem("rollLog", JSON.stringify(log));
-    }
-
-    /* =========================
-       RNG CORE
-       ========================= */
-
-    function rollRarity() {
-      const r = Math.random();
-      if (r < 0.6) return "Common";
-      if (r < 0.85) return "Rare";
-      if (r < 0.97) return "Epic";
-      return "Legendary";
-    }
-
-    function randomFrom(arr) {
-      return arr[Math.floor(Math.random() * arr.length)];
-    }
-
-    /* =========================
-       ROLL x10 FLOW
-       ========================= */
-
-    async function rollTen() {
-      rollBtn.disabled = true;
-      resultsDiv.innerHTML = "";
-
-      for (let i = 0; i < 10; i++) {
-        const rarity = rollRarity();
-        const prize = randomFrom(pool[rarity]);
-        const rollNumber = incrementRollCount();
-
-        // LOG ROLL
-        logRoll({
-          rollNumber,
-          rarity,
-          prize,
-          timestamp: new Date().toISOString()
-        });
-
-        // UI CARD
-        const card = document.createElement("div");
-        card.className = `card ${rarity}`;
-
-        card.innerHTML = `
-          <div class="rarity">
-            ${"★".repeat(
-              rarity === "Common" ? 1 :
-              rarity === "Rare" ? 2 :
-              rarity === "Epic" ? 4 : 5
-            )} ${rarity.toUpperCase()}
-          </div>
-          <div class="prize">${prize}</div>
-        `;
-
-        resultsDiv.appendChild(card);
-        await new Promise(res => setTimeout(res, 300));
-      }
-
-      rollBtn.disabled = false;
-    }
-
-    rollBtn.addEventListener("click", rollTen);
-  </script>
+  }
+</script>
 </body>
 </html>
