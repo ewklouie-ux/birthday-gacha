@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#f8b500">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Birthday Gacha Banner</title>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    background: linear-gradient(120deg, #fceabb, #f8b500);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    text-align: center;
+  }
+  #title {
+    font-size: 2rem;
+    margin-bottom: 20px;
+  }
+  #rollButton {
+    font-size: 1.5rem;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 10px;
+    background-color: #ff6f61;
+    color: white;
+    cursor: pointer;
+    margin-bottom: 20px;
+    box-shadow: 0 4px #cc5044;
+  }
+  #rollButton:active {
+    box-shadow: 0 2px #cc5044;
+    transform: translateY(2px);
+  }
+  #result {
+    font-size: 2rem;
+    min-height: 60px;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+
+<div id="title">🎂 Birthday Banner — Roll Now 🎲</div>
+<button id="rollButton">Roll 10x!</button>
+<div id="result">Your pulls will appear here...</div>
+
+<script>
+  const pulls = [
+    // Common ⭐
+    {text: "1 kiss 😘", rarity: "⭐", type: "common"},
+    {text: "3 kisses 😘😘😘", rarity: "⭐", type: "common"},
+    {text: "Hand squeeze 🤝", rarity: "⭐", type: "common"},
+    {text: "Sit closer 💛", rarity: "⭐", type: "common"},
+    {text: "Compliment 😊", rarity: "⭐", type: "common"},
+    {text: "Whisper something sweet 💌", rarity: "⭐", type: "common"},
+    {text: "Look into eyes 👀", rarity: "⭐", type: "common"},
+    {text: "Pick next song 🎵", rarity: "⭐", type: "common"},
+    {text: "Inside joke reference 🤭", rarity: "⭐", type: "common"},
+    {text: "Short cuddle 🤗", rarity: "⭐", type: "common"},
+    // Rare ⭐⭐
+    {text: "Photo together 📸", rarity: "⭐⭐", type: "rare"},
+    {text: "Write short note 📝", rarity: "⭐⭐", type: "rare"},
+    {text: "Choose next snack 🍪", rarity: "⭐⭐", type: "rare"},
+    {text: "Extended cuddle 🤗", rarity: "⭐⭐", type: "rare"},
+    {text: "Scenic stop 🏞️", rarity: "⭐⭐", type: "rare"},
+    // Epic ⭐⭐⭐
+    {text: "Hot drink ☕", rarity: "⭐⭐⭐", type: "epic"},
+    {text: "Small gift 🎁", rarity: "⭐⭐⭐", type: "epic"},
+    {text: "10-min massage 💆", rarity: "⭐⭐⭐", type: "epic"},
+    {text: "Mini surprise 🥰", rarity: "⭐⭐⭐", type: "epic"},
+    // Legendary ⭐⭐⭐⭐
+    {text: "Handwritten letter 💌 + main gift 🎁", rarity: "⭐⭐⭐⭐", type: "legendary"}
+  ];
+
+  const rarityWeights = {
+    "common": 70,
+    "rare": 20,
+    "epic": 9,
+    "legendary": 1
+  };
+
+  function weightedRandom() {
+    const roll = Math.random() * 100;
+    if (roll <= rarityWeights.common) return "common";
+    if (roll <= rarityWeights.common + rarityWeights.rare) return "rare";
+    if (roll <= rarityWeights.common + rarityWeights.rare + rarityWeights.epic) return "epic";
+    return "legendary";
+  }
+
+  function rollOnce() {
+    const rarity = weightedRandom();
+    const pool = pulls.filter(p => p.type === rarity);
+    return pool[Math.floor(Math.random() * pool.length)].text;
+  }
+
+  document.getElementById("rollButton").addEventListener("click", () => {
+    const results = [];
+    for (let i = 0; i < 10; i++) {
+      results.push(rollOnce());
+    }
+    // Animate suspense: show "Rolling..." then results
+    const resultDiv = document.getElementById("result");
+    resultDiv.textContent = "Rolling...";
+    setTimeout(() => {
+      resultDiv.textContent = results.join(" | ");
+    }, 1000);
+  });
+</script>
+
+</body>
+</html>
