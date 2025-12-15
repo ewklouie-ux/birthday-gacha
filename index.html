@@ -15,7 +15,20 @@
     align-items: center;
     height: 100vh;
   }
-  #app { width: 100%; max-width: 420px; padding: 20px; text-align: center; z-index: 1; }
+  #app {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    text-align: center;
+    z-index: 1;
+    transition: opacity 0.4s ease, filter 0.4s ease;
+  }
+
+  .dimmed {
+    opacity: 0.15;
+    filter: blur(4px);
+    pointer-events: none;
+  }
   h1 { margin-bottom: 10px; }
   #result {
     min-height: 120px;
@@ -77,6 +90,7 @@
 <div id="app">
   <h1>🎂 Limited Birthday Banner</h1>
   <p>Tap to Roll ×10</p>
+  <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>
   <div id="result"></div>
   <button id="rollBtn">🎲 Roll 10</button>
   <button id="historyBtn">📜 History</button>
@@ -104,6 +118,8 @@ const historyOverlay = document.getElementById("historyOverlay");
 const historyList = document.getElementById("historyList");
 const closeHistory = document.getElementById("closeHistory");
 const legendaryOverlay = document.getElementById("legendaryOverlay");
+const app = document.getElementById("app");
+const pityDisplay = document.getElementById("pityDisplay");
 const legendaryPrize = document.getElementById("legendaryPrize");
 const ackLegendary = document.getElementById("ackLegendary");
 
@@ -131,6 +147,11 @@ function rollOnce() {
   return "Common";
 }
 
+function updatePityUI() {
+  const pity = getPity();
+  pityDisplay.textContent = `Legendary Pity: ${pity.legendary} / 90`;
+}
+
 const rewardPools = {
   Common: ["1 kiss","3 kisses","Hand squeeze","Compliment","Sit closer","Eye contact moment","Choose next song"],
   Rare: ["Short handwritten note","Photo together","Choose next snack","Extended cuddle"],
@@ -141,6 +162,8 @@ function getReward(rarity) {
   const pool = rewardPools[rarity];
   return pool[Math.floor(Math.random() * pool.length)];
 }
+
+updatePityUI();
 
 rollBtn.addEventListener("click", async () => {
   rollBtn.disabled = true;
@@ -155,6 +178,7 @@ rollBtn.addEventListener("click", async () => {
 
     if (rarity === "Legendary") pity.legendary = 0; else pity.legendary++;
     savePity(pity);
+    updatePityUI();
 
     const logEntry = { rollNumber: getRollLog().length + 1, rarity, prize: reward, timestamp: Date.now() };
     saveRoll(logEntry);
@@ -168,6 +192,7 @@ rollBtn.addEventListener("click", async () => {
     if (rarity === "Legendary") {
       legendaryPrize.textContent = reward;
       document.body.style.overflow = "hidden";
+      app.classList.add("dimmed");
       legendaryOverlay.style.display = "flex";
       break;
     }
@@ -177,6 +202,7 @@ rollBtn.addEventListener("click", async () => {
 
 ackLegendary.addEventListener("click", () => {
   legendaryOverlay.style.display = "none";
+  app.classList.remove("dimmed");
   document.body.style.overflow = "";
 });
 
