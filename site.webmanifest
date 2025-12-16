@@ -1,10 +1,10 @@
 {
-  "name": "Happy Birthday KATHY",
-  "short_name": "KATHY",
+  "name": "HAPPY BIRTHDAY KATHY",
+  "short_name": "Kathy's 23rd",
   "start_url": "/birthday-gacha/",
-  "display": "standalone",
+  "theme_color": "#0b0d1a",
   "background_color": "#0b0d1a",
-  "theme_color": "#4f46e5",
+  "display": "standalone"
   "icons": [
     {
       "src": "/birthday-gacha/icons/android-chrome-192x192.png",
