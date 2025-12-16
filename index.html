@@ -53,12 +53,11 @@
 
 <div id="settingsOverlay" style="display:none;position:fixed;inset:0;z-index:3000;background:#0f1220;padding:20px;overflow-y:auto">
   <button id="closeSettings">Close</button>
-  <h2>Experience Toggles</h2>
-  <label><input type="checkbox" id="optDim" checked> Dim + blur background on Legendary</label><br><br>
-  <label><input type="checkbox" id="optSpark" checked> Spark particles on Legendary</label><br><br>
-  <label><input type="checkbox" id="optDelay" checked> Dramatic reveal delay</label><br><br>
-  <label><input type="checkbox" id="optSound"> Sound effects</label><br><br>
-  <label><input type="checkbox" id="optBanner" checked> Hype banner splash</label>
+  <h2>Experience Theme</h2>
+
+  <label><input type="radio" name="theme" value="romantic" checked> 💛 Soft & Romantic</label><br><br>
+  <label><input type="radio" name="theme" value="hype"> 🔥 Hype Gacha Pull</label><br><br>
+  <label><input type="radio" name="theme" value="boss"> 👑 Final Boss Energy</label>
 </div>
 
 <div id="historyOverlay">
@@ -92,9 +91,24 @@ const settingsOverlay = document.getElementById("settingsOverlay");
 const closeSettings = document.getElementById("closeSettings");
 
 const SETTINGS_KEY = "birthday_settings";
-const defaultSettings = { dim:true, spark:true, delay:true, sound:false, banner:true };
+const defaultSettings = { theme:'romantic' };
 function getSettings(){ return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || defaultSettings; }
 function saveSettings(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+
+function applyTheme(theme){
+  // reset
+  app.classList.remove('dimmed');
+
+  if(theme==='romantic'){
+    return { dim:true, spark:true, delay:true, sound:false, banner:false };
+  }
+  if(theme==='hype'){
+    return { dim:true, spark:true, delay:true, sound:true, banner:true };
+  }
+  if(theme==='boss'){
+    return { dim:true, spark:false, delay:false, sound:true, banner:true };
+  }
+}(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
 
 const STORAGE_KEY = "birthday_roll_log";
 const PITY_KEY = "birthday_pity";
@@ -148,10 +162,14 @@ function spawnSparks(count=40){
 }
 
 // PHASE 6.2 — SOUND
+// PHASE 6.2 — SOUND (realistic explanation below)
+// NOTE: Browsers require a *user gesture* AND a real audio buffer.
+// These are placeholders; replace with real short sounds if desired.
 const sounds={
-  pull:new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA='),
-  legendary:new Audio('data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=')
+  pull:new Audio(),
+  legendary:new Audio()
 };
+// Example: sounds.legendary.src = 'legendary-chime.mp3';
 function getReward(rarity) {
   const pool = rewardPools[rarity];
   return pool[Math.floor(Math.random() * pool.length)];
