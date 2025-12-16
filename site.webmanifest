@@ -1,20 +1,21 @@
 {
-  "name": "Birthday Limited Banner",
-  "short_name": "Birthday",
-  "start_url": ".",
-  "display": "standalone",
-  "background_color": "#0b0d1a",
-  "theme_color": "#4f46e5",
+  "name": "Happy Birthday KATHY",
+  "short_name": "KATHY",
   "icons": [
     {
-      "src": "icons/android-chrome-192x192.png",
+      "src": "/web-app-manifest-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     },
     {
-      "src": "icons/android-chrome-512x512.png",
+      "src": "/web-app-manifest-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable"
     }
-  ]
+  ],
+  "theme_color": "#ffffff",
+  "background_color": "#ffffff",
+  "display": "standalone"
 }
