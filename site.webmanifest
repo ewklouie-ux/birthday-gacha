@@ -4,7 +4,7 @@
   "start_url": "/birthday-gacha/",
   "theme_color": "#0b0d1a",
   "background_color": "#0b0d1a",
-  "display": "standalone"
+  "display": "standalone",
   "icons": [
     {
       "src": "/birthday-gacha/icons/android-chrome-192x192.png",
