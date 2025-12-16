@@ -26,9 +26,10 @@
     transition: opacity 0.4s ease, filter 0.4s ease;
   }
 
-  .dimmed {
-    opacity: 0.15;
-    filter: blur(4px);
+  /* When title screen or legendary is active */
+  .locked {
+    opacity: 0.12;
+    filter: blur(6px);
     pointer-events: none;
   }
 
@@ -79,6 +80,20 @@
     to { opacity: 1; transform: translateY(0); }
   }
 
+  /* TITLE SCREEN */
+  #bannerSplash {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 4000;
+    background:
+      radial-gradient(circle at top, rgba(255,215,0,0.22), rgba(0,0,0,0.98));
+    backdrop-filter: blur(14px);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
+
   /* HISTORY */
   #historyOverlay {
     display: none;
@@ -115,28 +130,20 @@
     from { opacity: 0.8; }
     to { opacity: 1; }
   }
-
-  /* TITLE SCREEN */
-  #bannerSplash {
-    display: flex;
-    position: fixed;
-    inset: 0;
-    z-index: 4000;
-    background: radial-gradient(circle at top, rgba(255,215,0,0.18), rgba(0,0,0,0.97));
-    backdrop-filter: blur(10px);
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-  }
 </style>
 </head>
 
 <body>
+
 <div id="bannerSplash">
   <div>
     <h1 style="font-size:2.8rem;">🎂 LIMITED BIRTHDAY BANNER 🎂</h1>
-    <p style="opacity:.85;margin:16px 0;">Available for a limited time only</p>
-    <button id="enterBanner" style="max-width:260px;">Enter Banner</button>
+    <p style="opacity:.85;margin:16px 0;">
+      Available for a limited time only
+    </p>
+    <button id="enterBanner" style="max-width:260px;">
+      Enter Banner
+    </button>
   </div>
 </div>
 
@@ -165,24 +172,46 @@
 </div>
 
 <script>
+const app = document.getElementById("app");
+const bannerSplash = document.getElementById("bannerSplash");
+const enterBanner = document.getElementById("enterBanner");
+const titleBtn = document.getElementById("titleBtn");
+
 const rollBtn = document.getElementById("rollBtn");
 const resultDiv = document.getElementById("result");
+const pityDisplay = document.getElementById("pityDisplay");
+
 const historyBtn = document.getElementById("historyBtn");
 const historyOverlay = document.getElementById("historyOverlay");
 const historyList = document.getElementById("historyList");
 const closeHistory = document.getElementById("closeHistory");
+
 const legendaryOverlay = document.getElementById("legendaryOverlay");
 const legendaryPrize = document.getElementById("legendaryPrize");
 const ackLegendary = document.getElementById("ackLegendary");
-const bannerSplash = document.getElementById("bannerSplash");
-const enterBanner = document.getElementById("enterBanner");
-const titleBtn = document.getElementById("titleBtn");
-const pityDisplay = document.getElementById("pityDisplay");
-const app = document.getElementById("app");
 
 const STORAGE_KEY = "birthday_roll_log";
 const PITY_KEY = "birthday_pity";
 
+/* ---------- TITLE SCREEN CONTROL ---------- */
+function showTitle() {
+  bannerSplash.style.display = "flex";
+  app.classList.add("locked");
+}
+
+function hideTitle() {
+  bannerSplash.style.display = "none";
+  app.classList.remove("locked");
+}
+
+/* Initial load */
+showTitle();
+
+/* Buttons */
+enterBanner.addEventListener("click", hideTitle);
+titleBtn.addEventListener("click", showTitle);
+
+/* ---------- DATA ---------- */
 function getRollLog() {
   return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 }
@@ -199,37 +228,37 @@ function savePity(p) {
   localStorage.setItem(PITY_KEY, JSON.stringify(p));
 }
 
-function rollOnce() {
-  const pity = getPity();
-  let legendaryChance = 1 + pity.legendary * 0.5;
-  if (pity.legendary >= 90) return "Legendary";
-
-  const n = Math.random() * 100;
-  if (n < legendaryChance) return "Legendary";
-  if (n < legendaryChance + 9) return "Epic";
-  if (n < legendaryChance + 29) return "Rare";
-  return "Common";
-}
-
 function updatePityUI() {
-  const pity = getPity();
-  pityDisplay.textContent = `Legendary Pity: ${pity.legendary} / 90`;
+  pityDisplay.textContent = `Legendary Pity: ${getPity().legendary} / 90`;
 }
 
 const rewardPools = {
-  Common: ["1 kiss","3 kisses","Hand squeeze","Compliment","Sit closer","Eye contact moment","Choose next song"],
-  Rare: ["Short handwritten note","Photo together","Choose next snack","Extended cuddle"],
-  Epic: ["Prepared note","Small gift","10-minute massage","Surprise drink"],
+  Common: ["1 kiss","3 kisses","Hand squeeze","Compliment","Sit closer"],
+  Rare: ["Short handwritten note","Photo together","Extended cuddle"],
+  Epic: ["Prepared note","Small gift","10-minute massage"],
   Legendary: ["Main Birthday Gift","Deep Handwritten Letter"]
 };
 
-function getReward(rarity) {
-  const pool = rewardPools[rarity];
+function rollOnce() {
+  const pity = getPity();
+  const chance = 1 + pity.legendary * 0.5;
+  if (pity.legendary >= 90) return "Legendary";
+
+  const n = Math.random() * 100;
+  if (n < chance) return "Legendary";
+  if (n < chance + 9) return "Epic";
+  if (n < chance + 29) return "Rare";
+  return "Common";
+}
+
+function getReward(r) {
+  const pool = rewardPools[r];
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
 updatePityUI();
 
+/* ---------- ROLL ---------- */
 rollBtn.addEventListener("click", async () => {
   rollBtn.disabled = true;
   resultDiv.innerHTML = "";
@@ -259,7 +288,7 @@ rollBtn.addEventListener("click", async () => {
 
     if (rarity === "Legendary") {
       legendaryPrize.textContent = reward;
-      app.classList.add("dimmed");
+      app.classList.add("locked");
       legendaryOverlay.style.display = "flex";
       break;
     }
@@ -269,22 +298,14 @@ rollBtn.addEventListener("click", async () => {
 
 ackLegendary.addEventListener("click", () => {
   legendaryOverlay.style.display = "none";
-  app.classList.remove("dimmed");
+  app.classList.remove("locked");
 });
 
-enterBanner.addEventListener("click", () => {
-  bannerSplash.style.display = "none";
-});
-
-titleBtn.addEventListener("click", () => {
-  bannerSplash.style.display = "flex";
-});
-
+/* ---------- HISTORY ---------- */
 historyBtn.addEventListener("click", () => {
   historyOverlay.style.display = "block";
   renderHistory();
 });
-
 closeHistory.addEventListener("click", () => {
   historyOverlay.style.display = "none";
 });
@@ -292,14 +313,15 @@ closeHistory.addEventListener("click", () => {
 function renderHistory() {
   const log = getRollLog().slice().reverse();
   historyList.innerHTML = log.length ? "" : "<p>No rolls yet.</p>";
-  for (const entry of log) {
+  for (const e of log) {
     const div = document.createElement("div");
-    div.className = `history-item ${entry.rarity}`;
+    div.className = "history-item";
     div.innerHTML = `
-      <strong>#${entry.rollNumber}</strong> — ${entry.rarity}<br>
-      ${entry.prize}<br>
-      <span style="opacity:.6;font-size:.8rem">${new Date(entry.timestamp).toLocaleString()}</span>
-    `;
+      <strong>#${e.rollNumber}</strong> — ${e.rarity}<br>
+      ${e.prize}<br>
+      <span style="opacity:.6;font-size:.8rem">
+        ${new Date(e.timestamp).toLocaleString()}
+      </span>`;
     historyList.appendChild(div);
   }
 }
