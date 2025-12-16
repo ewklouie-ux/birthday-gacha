@@ -87,6 +87,14 @@
 </style>
 </head>
 <body class="stars">
+<div id="bannerSplash" style="display:none;position:fixed;inset:0;z-index:3000;background:radial-gradient(circle at top, rgba(255,215,0,0.25), rgba(0,0,0,0.95));backdrop-filter:blur(6px);justify-content:center;align-items:center;text-align:center;">
+  <div>
+    <h1 style="font-size:2.6rem;">🎂 LIMITED BIRTHDAY BANNER 🎂</h1>
+    <p style="opacity:.85;margin:16px 0;">Available for a limited time only</p>
+    <button id="enterBanner" style="max-width:260px;">Enter Banner</button>
+  </div>
+</div>
+
 <div id="app">
   <h1>🎂 Limited Birthday Banner</h1>
   <p>Tap to Roll ×10</p>
@@ -122,6 +130,8 @@ const app = document.getElementById("app");
 const pityDisplay = document.getElementById("pityDisplay");
 const legendaryPrize = document.getElementById("legendaryPrize");
 const ackLegendary = document.getElementById("ackLegendary");
+const bannerSplash = document.getElementById("bannerSplash");
+const enterBanner = document.getElementById("enterBanner");
 
 const STORAGE_KEY = "birthday_roll_log";
 const PITY_KEY = "birthday_pity";
@@ -165,6 +175,12 @@ function getReward(rarity) {
 
 updatePityUI();
 
+// PHASE 6: BANNER SPLASH (once per session)
+if (!sessionStorage.getItem("banner_seen")) {
+  document.body.style.overflow = "hidden";
+  bannerSplash.style.display = "flex";
+}
+
 rollBtn.addEventListener("click", async () => {
   rollBtn.disabled = true;
   resultDiv.innerHTML = "";
@@ -204,6 +220,12 @@ ackLegendary.addEventListener("click", () => {
   legendaryOverlay.style.display = "none";
   app.classList.remove("dimmed");
   document.body.style.overflow = "";
+});
+
+enterBanner.addEventListener("click", () => {
+  bannerSplash.style.display = "none";
+  document.body.style.overflow = "";
+  sessionStorage.setItem("banner_seen", "1");
 });
 
 historyBtn.addEventListener("click", () => { historyOverlay.style.display = "block"; renderHistory(); });
