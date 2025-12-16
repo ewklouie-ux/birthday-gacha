@@ -44,23 +44,7 @@
 <div id="app">
   <h1>🎂 Limited Birthday Banner</h1>
   <p>Tap to Roll ×10</p>
-  <button id="settingsBtn" style="background:#1f2347">⚙️ Settings</button>
-  <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>
-  <div id="result"></div>
-  <button id="rollBtn">🎲 Roll 10</button>
-  <button id="historyBtn">📜 History</button>
-</div>
-
-<div id="settingsOverlay" style="display:none;position:fixed;inset:0;z-index:3000;background:#0f1220;padding:20px;overflow-y:auto">
-  <button id="closeSettings">Close</button>
-  <h2>Experience Theme</h2>
-
-  <label><input type="radio" name="theme" value="romantic" checked> 💛 Soft & Romantic</label><br><br>
-  <label><input type="radio" name="theme" value="hype"> 🔥 Hype Gacha Pull</label><br><br>
-  <label><input type="radio" name="theme" value="boss"> 👑 Final Boss Energy</label>
-</div>
-
-<div id="historyOverlay">
+  <div id="historyOverlay">
   <button id="closeHistory">Close</button>
   <h2>Roll History</h2>
   <div id="historyList"></div>
@@ -86,22 +70,9 @@ const app = document.getElementById("app");
 const pityDisplay = document.getElementById("pityDisplay");
 const legendaryPrize = document.getElementById("legendaryPrize");
 const ackLegendary = document.getElementById("ackLegendary");
-const settingsBtn = document.getElementById("settingsBtn");
-const settingsOverlay = document.getElementById("settingsOverlay");
-const closeSettings = document.getElementById("closeSettings");
 
-const SETTINGS_KEY = "birthday_settings";
-const defaultSettings = { theme:'romantic' };
-function getSettings(){ return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || defaultSettings; }
 function saveSettings(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
 
-function applyTheme(theme){
-  // reset
-  app.classList.remove('dimmed');
-
-  if(theme==='romantic'){
-    return { dim:true, spark:true, delay:true, sound:false, banner:false };
-  }
   if(theme==='hype'){
     return { dim:true, spark:true, delay:true, sound:true, banner:true };
   }
@@ -179,13 +150,6 @@ updatePityUI();
 const s = getSettings();
 optDim.checked = s.dim; optSpark.checked = s.spark; optDelay.checked = s.delay; optSound.checked = s.sound; optBanner.checked = s.banner;
 
-settingsBtn.addEventListener("click",()=> settingsOverlay.style.display="block");
-closeSettings.addEventListener("click",()=> settingsOverlay.style.display="none");
-
-[optDim,optSpark,optDelay,optSound,optBanner].forEach(()=>{});
-
-function readSettings(){ const s={ dim:optDim.checked, spark:optSpark.checked, delay:optDelay.checked, sound:optSound.checked, banner:optBanner.checked }; saveSettings(s); return s; }
-
 rollBtn.addEventListener("click", async () => {
   rollBtn.disabled = true;
   resultDiv.innerHTML = "";
@@ -211,13 +175,11 @@ rollBtn.addEventListener("click", async () => {
 
     // PHASE 4: SCREEN TAKEOVER
     if (rarity === "Legendary") {
-      const settings = readSettings();
-      if (settings.dim) app.classList.add("dimmed");
+      app.classList.add("dimmed");
       legendaryPrize.textContent = reward;
-      if (settings.delay) await new Promise(r=>setTimeout(r,700));
+      await new Promise(r=>setTimeout(r,700));
       legendaryOverlay.style.display = "flex";
-      if (settings.spark) spawnSparks();
-      if (settings.sound) sounds.legendary.play().catch(()=>{});
+      spawnSparks();(()=>{});
       const settings = readSettings();
       if (settings.dim) app.classList.add("dimmed");
       legendaryPrize.textContent = reward;
