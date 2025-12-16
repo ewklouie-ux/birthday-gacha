@@ -7,7 +7,7 @@
 <style>
   body {
     margin: 0;
-    background: #0b0d1a;
+    background: radial-gradient(circle at top, #111433, #0b0d1a);
     font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
     color: white;
     display: flex;
@@ -15,101 +15,49 @@
     align-items: center;
     height: 100vh;
   }
-
   #app {
-    width: 100%;
-    max-width: 420px;
-    padding: 20px;
-    text-align: center;
-    z-index: 1;
-    transition: opacity 0.4s ease, filter 0.4s ease;
+    width: 100%; max-width: 420px; padding: 20px; text-align: center;
+    z-index: 1; transition: opacity .4s ease, filter .4s ease;
   }
+  .dimmed { opacity:.15; filter:blur(4px); pointer-events:none; }
+  #result { min-height:120px; margin:20px 0; max-height:45vh; overflow-y:auto; }
+  .card { margin:6px 0; padding:12px; border-radius:14px; background:#1a1d33; animation:fadeIn .3s ease forwards; }
+  .Common{border-left:6px solid #b0b0b0} .Rare{border-left:6px solid #4da6ff}
+  .Epic{border-left:6px solid #b066ff} .Legendary{border-left:6px solid gold}
+  button{width:100%;padding:14px;font-size:1.1rem;border-radius:14px;border:none;background:#4f46e5;color:white;cursor:pointer;margin-top:10px}
+  button:disabled{opacity:.5}
+  #historyBtn{background:#2a2e5a}
+  @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
-  .dimmed {
-    opacity: 0.15;
-    filter: blur(4px);
-    pointer-events: none;
-  }
+  /* LEGENDARY */
+  #legendaryOverlay{display:none;position:fixed;inset:0;z-index:5000;
+    background:radial-gradient(circle,rgba(255,215,0,.35),rgba(0,0,0,.95));
+    backdrop-filter:blur(6px);justify-content:center;align-items:center;text-align:center}
+  #legendaryOverlay h1{font-size:2.4rem}
 
-  h1 { margin-bottom: 10px; }
-
-  #result {
-    min-height: 120px;
-    margin: 20px 0;
-    max-height: 45vh;
-    overflow-y: auto;
-  }
-
-  .card {
-    margin: 6px 0;
-    padding: 12px;
-    border-radius: 14px;
-    background: #1a1d33;
-    animation: fadeIn 0.3s ease forwards;
-  }
-
-  .Common { border-left: 6px solid #b0b0b0; }
-  .Rare { border-left: 6px solid #4da6ff; }
-  .Epic { border-left: 6px solid #b066ff; }
-  .Legendary { border-left: 6px solid gold; }
-
-  button {
-    width: 100%;
-    padding: 14px;
-    font-size: 1.1rem;
-    border-radius: 14px;
-    border: none;
-    background: #4f46e5;
-    color: white;
-    cursor: pointer;
-    margin-top: 10px;
-  }
-
-  #historyBtn { background: #2a2e5a; }
-
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  #historyOverlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: #0f1220;
-    z-index: 1000;
-    padding: 20px;
-    overflow-y: auto;
-  }
-
-  .history-item {
-    margin: 10px 0;
-    padding: 12px;
-    border-radius: 12px;
-    background: #1a1d33;
-  }
-
-  #legendaryOverlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 2000;
-    background: radial-gradient(circle, rgba(255,215,0,0.35), rgba(0,0,0,0.95));
-    backdrop-filter: blur(6px);
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-  }
+  /* SPARKS */
+  .spark{position:fixed;width:6px;height:6px;border-radius:50%;background:gold;pointer-events:none;animation:spark 1s linear forwards}
+  @keyframes spark{from{transform:translate(0,0) scale(1);opacity:1}to{transform:translate(var(--x),var(--y)) scale(0);opacity:0}}
 </style>
 </head>
-<body>
+<body class="stars">
 <div id="app">
   <h1>🎂 Limited Birthday Banner</h1>
   <p>Tap to Roll ×10</p>
+  <button id="settingsBtn" style="background:#1f2347">⚙️ Settings</button>
   <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>
   <div id="result"></div>
   <button id="rollBtn">🎲 Roll 10</button>
   <button id="historyBtn">📜 History</button>
+</div>
+
+<div id="settingsOverlay" style="display:none;position:fixed;inset:0;z-index:3000;background:#0f1220;padding:20px;overflow-y:auto">
+  <button id="closeSettings">Close</button>
+  <h2>Experience Theme</h2>
+
+  <label><input type="radio" name="theme" value="romantic" checked> 💛 Soft & Romantic</label><br><br>
+  <label><input type="radio" name="theme" value="hype"> 🔥 Hype Gacha Pull</label><br><br>
+  <label><input type="radio" name="theme" value="boss"> 👑 Final Boss Energy</label>
 </div>
 
 <div id="historyOverlay">
@@ -134,36 +82,50 @@ const historyOverlay = document.getElementById("historyOverlay");
 const historyList = document.getElementById("historyList");
 const closeHistory = document.getElementById("closeHistory");
 const legendaryOverlay = document.getElementById("legendaryOverlay");
-const legendaryPrize = document.getElementById("legendaryPrize");
-const ackLegendary = document.getElementById("ackLegendary");
 const app = document.getElementById("app");
 const pityDisplay = document.getElementById("pityDisplay");
+const legendaryPrize = document.getElementById("legendaryPrize");
+const ackLegendary = document.getElementById("ackLegendary");
+const settingsBtn = document.getElementById("settingsBtn");
+const settingsOverlay = document.getElementById("settingsOverlay");
+const closeSettings = document.getElementById("closeSettings");
+
+const SETTINGS_KEY = "birthday_settings";
+const defaultSettings = { theme:'romantic' };
+function getSettings(){ return JSON.parse(localStorage.getItem(SETTINGS_KEY)) || defaultSettings; }
+function saveSettings(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
+
+function applyTheme(theme){
+  // reset
+  app.classList.remove('dimmed');
+
+  if(theme==='romantic'){
+    return { dim:true, spark:true, delay:true, sound:false, banner:false };
+  }
+  if(theme==='hype'){
+    return { dim:true, spark:true, delay:true, sound:true, banner:true };
+  }
+  if(theme==='boss'){
+    return { dim:true, spark:false, delay:false, sound:true, banner:true };
+  }
+}(s){ localStorage.setItem(SETTINGS_KEY, JSON.stringify(s)); }
 
 const STORAGE_KEY = "birthday_roll_log";
 const PITY_KEY = "birthday_pity";
 
-function getRollLog() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-}
-
-function saveRoll(entry) {
-  const log = getRollLog();
-  log.push(entry);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(log));
-}
+function getRollLog() { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
+function saveRoll(entry) { const log = getRollLog(); log.push(entry); localStorage.setItem(STORAGE_KEY, JSON.stringify(log)); }
 
 function getPity() {
   return JSON.parse(localStorage.getItem(PITY_KEY)) || { legendary: 0 };
 }
+function savePity(p) { localStorage.setItem(PITY_KEY, JSON.stringify(p)); }
 
-function savePity(p) {
-  localStorage.setItem(PITY_KEY, JSON.stringify(p));
-}
-
+// PHASE 3: PITY SYSTEM
 function rollOnce() {
   const pity = getPity();
-  let legendaryChance = 1 + pity.legendary * 0.5;
-  if (pity.legendary >= 90) return "Legendary";
+  let legendaryChance = 1 + pity.legendary * 0.5; // soft pity
+  if (pity.legendary >= 90) return "Legendary"; // hard pity
 
   const n = Math.random() * 100;
   if (n < legendaryChance) return "Legendary";
@@ -178,18 +140,51 @@ function updatePityUI() {
 }
 
 const rewardPools = {
-  Common: ["1 kiss","3 kisses","Hand squeeze","Compliment","Sit closer","Eye contact moment","Choose next song"],
-  Rare: ["Short handwritten note","Photo together","Choose next snack","Extended cuddle"],
-  Epic: ["Prepared note","Small gift","10-minute massage","Surprise drink"],
-  Legendary: ["Main Birthday Gift","Deep Handwritten Letter"]
+  Common:["1 kiss","3 kisses","Hand squeeze","Compliment","Sit closer","Eye contact moment","Choose next song"],
+  Rare:["Short handwritten note","Photo together","Choose next snack","Extended cuddle"],
+  Epic:["Prepared note","Small gift","10-minute massage","Surprise drink"],
+  Legendary:["Main Birthday Gift","Deep Handwritten Letter"]
 };
 
+// PHASE 6.1 — SPARK PARTICLES
+function spawnSparks(count=40){
+  for(let i=0;i<count;i++){
+    const s=document.createElement('div');
+    s.className='spark';
+    const x=(Math.random()*600-300)+'px';
+    const y=(Math.random()*600-300)+'px';
+    s.style.setProperty('--x',x);
+    s.style.setProperty('--y',y);
+    s.style.left='50%'; s.style.top='50%';
+    document.body.appendChild(s);
+    setTimeout(()=>s.remove(),1000);
+  }
+}
+
+// PHASE 6.2 — SOUND
+// PHASE 6.2 — SOUND (realistic explanation below)
+// NOTE: Browsers require a *user gesture* AND a real audio buffer.
+// These are placeholders; replace with real short sounds if desired.
+const sounds={
+  pull:new Audio(),
+  legendary:new Audio()
+};
+// Example: sounds.legendary.src = 'legendary-chime.mp3';
 function getReward(rarity) {
   const pool = rewardPools[rarity];
   return pool[Math.floor(Math.random() * pool.length)];
 }
 
 updatePityUI();
+const s = getSettings();
+optDim.checked = s.dim; optSpark.checked = s.spark; optDelay.checked = s.delay; optSound.checked = s.sound; optBanner.checked = s.banner;
+
+settingsBtn.addEventListener("click",()=> settingsOverlay.style.display="block");
+closeSettings.addEventListener("click",()=> settingsOverlay.style.display="none");
+
+[optDim,optSpark,optDelay,optSound,optBanner].forEach(()=>{});
+
+function readSettings(){ const s={ dim:optDim.checked, spark:optSpark.checked, delay:optDelay.checked, sound:optSound.checked, banner:optBanner.checked }; saveSettings(s); return s; }
 
 rollBtn.addEventListener("click", async () => {
   rollBtn.disabled = true;
@@ -202,19 +197,11 @@ rollBtn.addEventListener("click", async () => {
     const reward = getReward(rarity);
     const pity = getPity();
 
-    if (rarity === "Legendary") pity.legendary = 0;
-    else pity.legendary++;
-
+    if (rarity === "Legendary") pity.legendary = 0; else pity.legendary++;
     savePity(pity);
     updatePityUI();
 
-    const logEntry = {
-      rollNumber: getRollLog().length + 1,
-      rarity,
-      prize: reward,
-      timestamp: Date.now()
-    };
-
+    const logEntry = { rollNumber: getRollLog().length + 1, rarity, prize: reward, timestamp: Date.now() };
     saveRoll(logEntry);
 
     const card = document.createElement("div");
@@ -222,15 +209,28 @@ rollBtn.addEventListener("click", async () => {
     card.innerHTML = `<strong>${rarity}</strong><br>${reward}`;
     resultDiv.appendChild(card);
 
+    // PHASE 4: SCREEN TAKEOVER
     if (rarity === "Legendary") {
+      const settings = readSettings();
+      if (settings.dim) app.classList.add("dimmed");
+      legendaryPrize.textContent = reward;
+      if (settings.delay) await new Promise(r=>setTimeout(r,700));
+      legendaryOverlay.style.display = "flex";
+      if (settings.spark) spawnSparks();
+      if (settings.sound) sounds.legendary.play().catch(()=>{});
+      const settings = readSettings();
+      if (settings.dim) app.classList.add("dimmed");
       legendaryPrize.textContent = reward;
       document.body.style.overflow = "hidden";
       app.classList.add("dimmed");
+      if (settings.delay) await new Promise(r=>setTimeout(r,700));
       legendaryOverlay.style.display = "flex";
+      // optional spark/sound hooks
+      if (settings.sound) console.log('play sound');
+      if (settings.spark) console.log('spawn sparks');
       break;
     }
   }
-
   rollBtn.disabled = false;
 });
 
@@ -240,32 +240,25 @@ ackLegendary.addEventListener("click", () => {
   document.body.style.overflow = "";
 });
 
-historyBtn.addEventListener("click", () => {
-  historyOverlay.style.display = "block";
-  renderHistory();
-});
-
-closeHistory.addEventListener("click", () => {
-  historyOverlay.style.display = "none";
-});
+historyBtn.addEventListener("click", () => { historyOverlay.style.display = "block"; renderHistory(); });
+closeHistory.addEventListener("click", () => { historyOverlay.style.display = "none"; });
 
 function renderHistory() {
   const log = getRollLog().slice().reverse();
   historyList.innerHTML = log.length ? "" : "<p>No rolls yet.</p>";
-
   for (const entry of log) {
     const div = document.createElement("div");
     div.className = `history-item ${entry.rarity}`;
-    div.innerHTML = `
-      <div><strong>#${entry.rollNumber}</strong> — ${entry.rarity}</div>
-      <div>${entry.prize}</div>
-      <div style="opacity:0.6;font-size:0.8rem;">
-        ${new Date(entry.timestamp).toLocaleString()}
-      </div>
-    `;
+    div.innerHTML = `<strong>#${entry.rollNumber}</strong> — ${entry.rarity}<br>${entry.prize}<br><span style='opacity:.6;font-size:.8rem'>${new Date(entry.timestamp).toLocaleString()}</span>`;
     historyList.appendChild(div);
   }
 }
+
+// PHASE 5: SECRET DEV CONSOLE
+window.giftDev = {
+  reset() { localStorage.clear(); location.reload(); },
+  forceLegendary() { savePity({ legendary: 89 }); }
+};
 </script>
 </body>
 </html>
