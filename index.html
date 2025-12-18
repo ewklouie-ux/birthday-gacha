@@ -336,6 +336,40 @@ document.getElementById("ackLegendary").onclick = () => {
   document.getElementById("legendaryOverlay").style.display = "none";
   app.classList.remove("locked");
 };
+
+  /* ---------- HISTORY (FIX) ---------- */
+const historyBtn = document.getElementById("historyBtn");
+const historyOverlay = document.getElementById("historyOverlay");
+const historyList = document.getElementById("historyList");
+const closeHistory = document.getElementById("closeHistory");
+
+historyBtn.onclick = () => {
+  historyOverlay.style.display = "block";
+  renderHistory();
+};
+
+closeHistory.onclick = () => {
+  historyOverlay.style.display = "none";
+};
+
+function renderHistory() {
+  const log = getRollLog().slice().reverse();
+  historyList.innerHTML = log.length ? "" : "<p>No rolls yet.</p>";
+
+  for (const e of log) {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      <strong>#${e.rollNumber}</strong> — ${e.rarity}<br>
+      ${e.prize}<br>
+      <span style="opacity:.6;font-size:.8rem">
+        ${new Date(e.timestamp).toLocaleString()}
+      </span>
+    `;
+    historyList.appendChild(div);
+  }
+};
+
 </script>
 </body>
 </html>
