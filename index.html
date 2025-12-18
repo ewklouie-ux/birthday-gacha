@@ -13,6 +13,8 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/birthday-gacha/icons/android-chrome-192x192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/birthday-gacha/icons/android-chrome-512x512.png">
 <link rel="apple-touch-icon" href="/birthday-gacha/icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="/birthday-gacha/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16" href="/birthday-gacha/icons/favicon-16x16.png">
 
 <title>Birthday Limited Banner</title>
 
@@ -42,8 +44,11 @@ body {
   pointer-events: none;
 }
 
+h1 { margin-bottom: 10px; }
+
 #result {
   min-height: 120px;
+  margin: 20px 0;
   max-height: 45vh;
   overflow-y: auto;
 }
@@ -53,6 +58,7 @@ body {
   padding: 12px;
   border-radius: 14px;
   background: #1a1d33;
+  animation: fadeIn 0.3s ease forwards;
 }
 
 .Common { border-left: 6px solid #b0b0b0; }
@@ -72,17 +78,68 @@ button {
   margin-top: 10px;
 }
 
+button:disabled { opacity: 0.5; }
+
+#historyBtn { background: #2a2e5a; }
+#titleBtn { background: #1f234a; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* LEVEL UI */
+#levelBox {
+  margin: 10px 0 6px;
+  text-align: left;
+}
+
+#levelLabel {
+  font-size: .85rem;
+  opacity: .85;
+  margin-bottom: 4px;
+}
+
+.xp-bar {
+  width: 100%;
+  height: 8px;
+  background: #2a2e5a;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+#xpFill {
+  height: 100%;
+  width: 0%;
+  background: linear-gradient(90deg, #4f46e5, #a78bfa);
+  transition: width .4s ease;
+}
+
+/* TITLE SCREEN */
 #bannerSplash {
   position: fixed;
   inset: 0;
+  z-index: 4000;
   background: radial-gradient(circle at top, rgba(255,215,0,0.22), rgba(0,0,0,0.98));
+  backdrop-filter: blur(14px);
   display: flex;
   justify-content: center;
   align-items: center;
   text-align: center;
-  z-index: 4000;
 }
 
+/* HISTORY */
+#historyOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #0f1220;
+  z-index: 3000;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+/* LEGENDARY */
 #legendaryOverlay {
   display: none;
   position: fixed;
@@ -100,7 +157,8 @@ button {
 
 <div id="bannerSplash">
   <div>
-    <h1>🎂 LIMITED BIRTHDAY BANNER 🎂</h1>
+    <h1 style="font-size:2.8rem;">🎂 LIMITED BIRTHDAY BANNER 🎂</h1>
+    <p style="opacity:.85;margin:16px 0;">Available for a limited time only</p>
     <button id="enterBanner">Enter Banner</button>
   </div>
 </div>
@@ -108,103 +166,93 @@ button {
 <div id="app">
   <h1>🎂 Limited Birthday Banner</h1>
 
-  <div id="levelDisplay" style="opacity:.85;font-size:.9rem;"></div>
-  <div id="pityDisplay" style="opacity:.7;font-size:.85rem;"></div>
+  <div id="levelBox">
+    <div id="levelLabel"></div>
+    <div class="xp-bar"><div id="xpFill"></div></div>
+  </div>
+
+  <div id="pityDisplay" style="opacity:.7;font-size:.8rem;"></div>
 
   <div id="result"></div>
 
   <button id="rollBtn">🎲 Roll 10</button>
+  <button id="historyBtn">📜 History</button>
+  <button id="titleBtn">🎂 Title Screen</button>
+</div>
+
+<div id="historyOverlay">
+  <button id="closeHistory">Close</button>
+  <h2>Roll History</h2>
+  <div id="historyList"></div>
 </div>
 
 <div id="legendaryOverlay">
   <div>
     <h1>🌟 LEGENDARY 🌟</h1>
     <p id="legendaryPrize"></p>
-    <button id="ackLegendary">Accept</button>
+    <button id="ackLegendary">Accept Gift</button>
   </div>
 </div>
 
 <script>
-/* -------------------- CONSTANTS -------------------- */
+/* ---------- KEYS ---------- */
 const STORAGE_KEY = "birthday_roll_log";
 const PITY_KEY = "birthday_pity";
 const PLAYER_KEY = "birthday_player";
 
-/* -------------------- ELEMENTS -------------------- */
-const app = document.getElementById("app");
-const bannerSplash = document.getElementById("bannerSplash");
-const enterBanner = document.getElementById("enterBanner");
-const rollBtn = document.getElementById("rollBtn");
-const resultDiv = document.getElementById("result");
-const pityDisplay = document.getElementById("pityDisplay");
-const levelDisplay = document.getElementById("levelDisplay");
-const legendaryOverlay = document.getElementById("legendaryOverlay");
-const legendaryPrize = document.getElementById("legendaryPrize");
-const ackLegendary = document.getElementById("ackLegendary");
-
-/* -------------------- TITLE -------------------- */
-bannerSplash.style.display = "flex";
-enterBanner.onclick = () => bannerSplash.style.display = "none";
-
-/* -------------------- PLAYER -------------------- */
+/* ---------- PLAYER ---------- */
 function getPlayer() {
   return JSON.parse(localStorage.getItem(PLAYER_KEY)) || { level: 1, xp: 0 };
 }
-
 function savePlayer(p) {
   localStorage.setItem(PLAYER_KEY, JSON.stringify(p));
 }
-
-function xpToNextLevel(level) {
-  return Math.floor(50 + level * 15);
+function xpToNextLevel(lvl) {
+  return 50 + lvl * 15;
 }
-
 function gainXP(amount) {
   const p = getPlayer();
   p.xp += amount;
-
   let leveled = false;
   while (p.xp >= xpToNextLevel(p.level)) {
     p.xp -= xpToNextLevel(p.level);
     p.level++;
     leveled = true;
   }
-
   savePlayer(p);
   updateLevelUI();
   return leveled;
 }
-
 function updateLevelUI() {
   const p = getPlayer();
-  levelDisplay.textContent = `Level ${p.level} — ${p.xp} / ${xpToNextLevel(p.level)} XP`;
+  document.getElementById("levelLabel").textContent =
+    `Level ${p.level} — ${p.xp} / ${xpToNextLevel(p.level)} XP`;
+  document.getElementById("xpFill").style.width =
+    `${(p.xp / xpToNextLevel(p.level)) * 100}%`;
 }
 
-/* -------------------- PITY -------------------- */
+/* ---------- PITY ---------- */
 function getPity() {
   return JSON.parse(localStorage.getItem(PITY_KEY)) || { legendary: 0 };
 }
-
 function savePity(p) {
   localStorage.setItem(PITY_KEY, JSON.stringify(p));
 }
-
 function updatePityUI() {
   pityDisplay.textContent = `Legendary Pity: ${getPity().legendary} / 90`;
 }
 
-/* -------------------- LOOT -------------------- */
+/* ---------- ROLL ---------- */
 const rewardPools = {
-  Common: ["XP Boost"],
-  Rare: ["Bonus XP"],
-  Epic: ["Epic Moment"],
+  Common: ["1 kiss","Compliment","Sit closer"],
+  Rare: ["Photo together","Extended cuddle"],
+  Epic: ["Prepared note","10-minute massage"],
   Legendary: ["Main Birthday Gift"]
 };
 
 function rollOnce() {
   const pity = getPity();
   if (pity.legendary >= 90) return "Legendary";
-
   const n = Math.random() * 100;
   if (n < 1 + pity.legendary * 0.5) return "Legendary";
   if (n < 10) return "Epic";
@@ -212,40 +260,56 @@ function rollOnce() {
   return "Common";
 }
 
-/* -------------------- ROLL -------------------- */
+/* ---------- INIT ---------- */
 updateLevelUI();
 updatePityUI();
+document.getElementById("app").classList.add("locked");
+
+/* ---------- UI ---------- */
+enterBanner.onclick = () => {
+  bannerSplash.style.display = "none";
+  app.classList.remove("locked");
+};
+titleBtn.onclick = () => {
+  bannerSplash.style.display = "flex";
+  app.classList.add("locked");
+};
 
 rollBtn.onclick = async () => {
   rollBtn.disabled = true;
   resultDiv.innerHTML = "";
 
   for (let i = 0; i < 10; i++) {
-    await new Promise(r => setTimeout(r, 200));
+    await new Promise(r => setTimeout(r, 250));
 
     const rarity = rollOnce();
+    const reward = rewardPools[rarity][0];
     const pity = getPity();
     rarity === "Legendary" ? pity.legendary = 0 : pity.legendary++;
     savePity(pity);
     updatePityUI();
 
-    let xp = rarity === "Common" ? 5 : rarity === "Rare" ? 10 : 0;
+    const xp = rarity === "Common" ? 5 :
+               rarity === "Rare" ? 10 :
+               rarity === "Epic" ? 20 : 0;
+
     const leveled = gainXP(xp);
 
     const card = document.createElement("div");
     card.className = `card ${rarity}`;
-    card.innerHTML = `<strong>${rarity}</strong><br>+${xp} XP`;
+    card.innerHTML = `<strong>${rarity}</strong><br>${reward} (+${xp} XP)`;
     resultDiv.appendChild(card);
 
     if (leveled) {
       const lvl = document.createElement("div");
-      lvl.className = "card";
-      lvl.innerHTML = "⬆️ Level Up!";
+      lvl.className = "card Epic";
+      lvl.textContent = "⬆️ LEVEL UP!";
       resultDiv.appendChild(lvl);
     }
 
     if (rarity === "Legendary") {
-      legendaryPrize.textContent = "🎁 Main Birthday Gift";
+      legendaryPrize.textContent = reward;
+      app.classList.add("locked");
       legendaryOverlay.style.display = "flex";
       break;
     }
@@ -253,7 +317,10 @@ rollBtn.onclick = async () => {
   rollBtn.disabled = false;
 };
 
-ackLegendary.onclick = () => legendaryOverlay.style.display = "none";
+ackLegendary.onclick = () => {
+  legendaryOverlay.style.display = "none";
+  app.classList.remove("locked");
+};
 </script>
 </body>
 </html>
