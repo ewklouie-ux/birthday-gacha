@@ -4,152 +4,152 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
 
+
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="theme-color" content="#4f46e5">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 
-<link rel="manifest" href="/birthday-gacha/site.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="/birthday-gacha/icons/android-chrome-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/birthday-gacha/icons/android-chrome-512x512.png">
-<link rel="apple-touch-icon" href="/birthday-gacha/icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/birthday-gacha/icons/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/birthday-gacha/icons/favicon-16x16.png">
+ <link rel="manifest" href="/birthday-gacha/site.webmanifest">
+<link rel="icon" type="image/png" sizes="192x192"
+      href="/birthday-gacha/icons/android-chrome-192x192.png">
+<link rel="icon" type="image/png" sizes="512x512"
+      href="/birthday-gacha/icons/android-chrome-512x512.png">
+<link rel="apple-touch-icon"
+      href="/birthday-gacha/icons/apple-touch-icon.png">
+ <link rel="icon" type="image/png" sizes="32x32"
+      href="/birthday-gacha/icons/favicon-32x32.png">
+<link rel="icon" type="image/png" sizes="16x16"
+      href="/birthday-gacha/icons/favicon-16x16.png">
 
+  
 <title>Birthday Limited Banner</title>
 
 <style>
-body {
-  margin: 0;
-  background: radial-gradient(circle at top, #111433, #0b0d1a);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
+  body {
+    margin: 0;
+    background: radial-gradient(circle at top, #111433, #0b0d1a);
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
 
-#app {
-  width: 100%;
-  max-width: 420px;
-  padding: 20px;
-  text-align: center;
-  transition: opacity 0.4s ease, filter 0.4s ease;
-}
+  #app {
+    width: 100%;
+    max-width: 420px;
+    padding: 20px;
+    text-align: center;
+    z-index: 1;
+    transition: opacity 0.4s ease, filter 0.4s ease;
+  }
 
-.locked {
-  opacity: 0.12;
-  filter: blur(6px);
-  pointer-events: none;
-}
+  /* When title screen or legendary is active */
+  .locked {
+    opacity: 0.12;
+    filter: blur(6px);
+    pointer-events: none;
+  }
 
-h1 { margin-bottom: 10px; }
+  h1 { margin-bottom: 10px; }
 
-#result {
-  min-height: 120px;
-  margin: 20px 0;
-  max-height: 45vh;
-  overflow-y: auto;
-}
+  #result {
+    min-height: 120px;
+    margin: 20px 0;
+    max-height: 45vh;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 
-.card {
-  margin: 6px 0;
-  padding: 12px;
-  border-radius: 14px;
-  background: #1a1d33;
-  animation: fadeIn 0.3s ease forwards;
-}
+  .card {
+    margin: 6px 0;
+    padding: 12px;
+    border-radius: 14px;
+    background: #1a1d33;
+    animation: fadeIn 0.3s ease forwards;
+  }
 
-.Common { border-left: 6px solid #b0b0b0; }
-.Rare { border-left: 6px solid #4da6ff; }
-.Epic { border-left: 6px solid #b066ff; }
-.Legendary { border-left: 6px solid gold; }
+  .Common { border-left: 6px solid #b0b0b0; }
+  .Rare { border-left: 6px solid #4da6ff; }
+  .Epic { border-left: 6px solid #b066ff; }
+  .Legendary { border-left: 6px solid gold; }
 
-button {
-  width: 100%;
-  padding: 14px;
-  font-size: 1.1rem;
-  border-radius: 14px;
-  border: none;
-  background: #4f46e5;
-  color: white;
-  cursor: pointer;
-  margin-top: 10px;
-}
+  button {
+    width: 100%;
+    padding: 14px;
+    font-size: 1.1rem;
+    border-radius: 14px;
+    border: none;
+    background: #4f46e5;
+    color: white;
+    cursor: pointer;
+    margin-top: 10px;
+  }
 
-button:disabled { opacity: 0.5; }
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
-#historyBtn { background: #2a2e5a; }
-#titleBtn { background: #1f234a; }
+  #historyBtn { background: #2a2e5a; }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
 
-/* LEVEL UI */
-#levelBox {
-  margin: 10px 0 6px;
-  text-align: left;
-}
+  /* TITLE SCREEN */
+  #bannerSplash {
+    display: flex;
+    position: fixed;
+    inset: 0;
+    z-index: 4000;
+    background:
+      radial-gradient(circle at top, rgba(255,215,0,0.22), rgba(0,0,0,0.98));
+    backdrop-filter: blur(14px);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+  }
 
-#levelLabel {
-  font-size: .85rem;
-  opacity: .85;
-  margin-bottom: 4px;
-}
+  /* HISTORY */
+  #historyOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: #0f1220;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+  }
 
-.xp-bar {
-  width: 100%;
-  height: 8px;
-  background: #2a2e5a;
-  border-radius: 8px;
-  overflow: hidden;
-}
+  .history-item {
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 12px;
+    background: #1a1d33;
+  }
 
-#xpFill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #4f46e5, #a78bfa);
-  transition: width .4s ease;
-}
+  /* LEGENDARY OVERLAY */
+  #legendaryOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 5000;
+    background: radial-gradient(circle, rgba(255,215,0,0.35), rgba(0,0,0,0.95));
+    backdrop-filter: blur(6px);
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    animation: glow 1.2s infinite alternate;
+  }
 
-/* TITLE SCREEN */
-#bannerSplash {
-  position: fixed;
-  inset: 0;
-  z-index: 4000;
-  background: radial-gradient(circle at top, rgba(255,215,0,0.22), rgba(0,0,0,0.98));
-  backdrop-filter: blur(14px);
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-/* HISTORY */
-#historyOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: #0f1220;
-  z-index: 3000;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-/* LEGENDARY */
-#legendaryOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 5000;
-  background: radial-gradient(circle, rgba(255,215,0,0.35), rgba(0,0,0,0.95));
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+  @keyframes glow {
+    from { opacity: 0.8; }
+    to { opacity: 1; }
+  }
 </style>
 </head>
 
@@ -158,26 +158,23 @@ button:disabled { opacity: 0.5; }
 <div id="bannerSplash">
   <div>
     <h1 style="font-size:2.8rem;">🎂 LIMITED BIRTHDAY BANNER 🎂</h1>
-    <p style="opacity:.85;margin:16px 0;">Available for a limited time only</p>
-    <button id="enterBanner">Enter Banner</button>
+    <p style="opacity:.85;margin:16px 0;">
+      Available for a limited time only
+    </p>
+    <button id="enterBanner" style="max-width:260px;">
+      Enter Banner
+    </button>
   </div>
 </div>
 
 <div id="app">
   <h1>🎂 Limited Birthday Banner</h1>
-
-  <div id="levelBox">
-    <div id="levelLabel"></div>
-    <div class="xp-bar"><div id="xpFill"></div></div>
-  </div>
-
-  <div id="pityDisplay" style="opacity:.7;font-size:.8rem;"></div>
-
+  <p>Tap to Roll ×10</p>
+  <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>
   <div id="result"></div>
-
   <button id="rollBtn">🎲 Roll 10</button>
   <button id="historyBtn">📜 History</button>
-  <button id="titleBtn">🎂 Title Screen</button>
+  <button id="titleBtn" style="background:#1f234a;">🎂 Title Screen</button>
 </div>
 
 <div id="historyOverlay">
@@ -195,87 +192,94 @@ button:disabled { opacity: 0.5; }
 </div>
 
 <script>
-/* ---------- KEYS ---------- */
+const app = document.getElementById("app");
+const bannerSplash = document.getElementById("bannerSplash");
+const enterBanner = document.getElementById("enterBanner");
+const titleBtn = document.getElementById("titleBtn");
+
+const rollBtn = document.getElementById("rollBtn");
+const resultDiv = document.getElementById("result");
+const pityDisplay = document.getElementById("pityDisplay");
+
+const historyBtn = document.getElementById("historyBtn");
+const historyOverlay = document.getElementById("historyOverlay");
+const historyList = document.getElementById("historyList");
+const closeHistory = document.getElementById("closeHistory");
+
+const legendaryOverlay = document.getElementById("legendaryOverlay");
+const legendaryPrize = document.getElementById("legendaryPrize");
+const ackLegendary = document.getElementById("ackLegendary");
+
 const STORAGE_KEY = "birthday_roll_log";
 const PITY_KEY = "birthday_pity";
-const PLAYER_KEY = "birthday_player";
 
-/* ---------- PLAYER ---------- */
-function getPlayer() {
-  return JSON.parse(localStorage.getItem(PLAYER_KEY)) || { level: 1, xp: 0 };
-}
-function savePlayer(p) {
-  localStorage.setItem(PLAYER_KEY, JSON.stringify(p));
-}
-function xpToNextLevel(lvl) {
-  return 50 + lvl * 15;
-}
-function gainXP(amount) {
-  const p = getPlayer();
-  p.xp += amount;
-  let leveled = false;
-  while (p.xp >= xpToNextLevel(p.level)) {
-    p.xp -= xpToNextLevel(p.level);
-    p.level++;
-    leveled = true;
-  }
-  savePlayer(p);
-  updateLevelUI();
-  return leveled;
-}
-function updateLevelUI() {
-  const p = getPlayer();
-  document.getElementById("levelLabel").textContent =
-    `Level ${p.level} — ${p.xp} / ${xpToNextLevel(p.level)} XP`;
-  document.getElementById("xpFill").style.width =
-    `${(p.xp / xpToNextLevel(p.level)) * 100}%`;
+/* ---------- TITLE SCREEN CONTROL ---------- */
+function showTitle() {
+  bannerSplash.style.display = "flex";
+  app.classList.add("locked");
 }
 
-/* ---------- PITY ---------- */
+function hideTitle() {
+  bannerSplash.style.display = "none";
+  app.classList.remove("locked");
+}
+
+/* Initial load */
+showTitle();
+
+/* Buttons */
+enterBanner.addEventListener("click", hideTitle);
+titleBtn.addEventListener("click", showTitle);
+
+/* ---------- DATA ---------- */
+function getRollLog() {
+  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+}
+function saveRoll(entry) {
+  const log = getRollLog();
+  log.push(entry);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(log));
+}
+
 function getPity() {
   return JSON.parse(localStorage.getItem(PITY_KEY)) || { legendary: 0 };
 }
 function savePity(p) {
   localStorage.setItem(PITY_KEY, JSON.stringify(p));
 }
+
 function updatePityUI() {
   pityDisplay.textContent = `Legendary Pity: ${getPity().legendary} / 90`;
 }
 
-/* ---------- ROLL ---------- */
 const rewardPools = {
-  Common: ["1 kiss","Compliment","Sit closer"],
-  Rare: ["Photo together","Extended cuddle"],
-  Epic: ["Prepared note","10-minute massage"],
-  Legendary: ["Main Birthday Gift"]
+  Common: ["1 kiss","3 kisses","Hand squeeze","Compliment","Sit closer"],
+  Rare: ["Short handwritten note","Photo together","Extended cuddle"],
+  Epic: ["Prepared note","Small gift","10-minute massage"],
+  Legendary: ["Main Birthday Gift","Deep Handwritten Letter"]
 };
 
 function rollOnce() {
   const pity = getPity();
+  const chance = 1 + pity.legendary * 0.5;
   if (pity.legendary >= 90) return "Legendary";
+
   const n = Math.random() * 100;
-  if (n < 1 + pity.legendary * 0.5) return "Legendary";
-  if (n < 10) return "Epic";
-  if (n < 30) return "Rare";
+  if (n < chance) return "Legendary";
+  if (n < chance + 9) return "Epic";
+  if (n < chance + 29) return "Rare";
   return "Common";
 }
 
-/* ---------- INIT ---------- */
-updateLevelUI();
+function getReward(r) {
+  const pool = rewardPools[r];
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
 updatePityUI();
-document.getElementById("app").classList.add("locked");
 
-/* ---------- UI ---------- */
-enterBanner.onclick = () => {
-  bannerSplash.style.display = "none";
-  app.classList.remove("locked");
-};
-titleBtn.onclick = () => {
-  bannerSplash.style.display = "flex";
-  app.classList.add("locked");
-};
-
-rollBtn.onclick = async () => {
+/* ---------- ROLL ---------- */
+rollBtn.addEventListener("click", async () => {
   rollBtn.disabled = true;
   resultDiv.innerHTML = "";
 
@@ -283,29 +287,24 @@ rollBtn.onclick = async () => {
     await new Promise(r => setTimeout(r, 250));
 
     const rarity = rollOnce();
-    const reward = rewardPools[rarity][0];
+    const reward = getReward(rarity);
     const pity = getPity();
+
     rarity === "Legendary" ? pity.legendary = 0 : pity.legendary++;
     savePity(pity);
     updatePityUI();
 
-    const xp = rarity === "Common" ? 5 :
-               rarity === "Rare" ? 10 :
-               rarity === "Epic" ? 20 : 0;
-
-    const leveled = gainXP(xp);
+    saveRoll({
+      rollNumber: getRollLog().length + 1,
+      rarity,
+      prize: reward,
+      timestamp: Date.now()
+    });
 
     const card = document.createElement("div");
     card.className = `card ${rarity}`;
-    card.innerHTML = `<strong>${rarity}</strong><br>${reward} (+${xp} XP)`;
+    card.innerHTML = `<strong>${rarity}</strong><br>${reward}`;
     resultDiv.appendChild(card);
-
-    if (leveled) {
-      const lvl = document.createElement("div");
-      lvl.className = "card Epic";
-      lvl.textContent = "⬆️ LEVEL UP!";
-      resultDiv.appendChild(lvl);
-    }
 
     if (rarity === "Legendary") {
       legendaryPrize.textContent = reward;
@@ -315,12 +314,37 @@ rollBtn.onclick = async () => {
     }
   }
   rollBtn.disabled = false;
-};
+});
 
-ackLegendary.onclick = () => {
+ackLegendary.addEventListener("click", () => {
   legendaryOverlay.style.display = "none";
   app.classList.remove("locked");
-};
+});
+
+/* ---------- HISTORY ---------- */
+historyBtn.addEventListener("click", () => {
+  historyOverlay.style.display = "block";
+  renderHistory();
+});
+closeHistory.addEventListener("click", () => {
+  historyOverlay.style.display = "none";
+});
+
+function renderHistory() {
+  const log = getRollLog().slice().reverse();
+  historyList.innerHTML = log.length ? "" : "<p>No rolls yet.</p>";
+  for (const e of log) {
+    const div = document.createElement("div");
+    div.className = "history-item";
+    div.innerHTML = `
+      <strong>#${e.rollNumber}</strong> — ${e.rarity}<br>
+      ${e.prize}<br>
+      <span style="opacity:.6;font-size:.8rem">
+        ${new Date(e.timestamp).toLocaleString()}
+      </span>`;
+    historyList.appendChild(div);
+  }
+}
 </script>
 </body>
 </html>
