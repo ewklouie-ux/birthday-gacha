@@ -42,9 +42,9 @@ body {
   pointer-events: none;
 }
 
-/* XP BAR */
+/* XP + LEVEL */
 #xpContainer {
-  margin: 12px 0 16px;
+  margin: 12px 0 8px;
   background: #12142a;
   border-radius: 999px;
   padding: 4px;
@@ -65,10 +65,12 @@ body {
   transition: width 0.35s ease;
 }
 
-#xpText {
-  margin-top: 6px;
+#xpMeta {
+  display: flex;
+  justify-content: space-between;
   font-size: 0.75rem;
-  opacity: 0.75;
+  opacity: 0.8;
+  margin-bottom: 6px;
 }
 
 #result {
@@ -168,10 +170,14 @@ button:disabled {
   <h1>🎂 Limited Birthday Banner</h1>
   <p>Tap to Roll ×10</p>
 
+  <div id="xpMeta">
+    <span id="levelText">Level 1</span>
+    <span id="xpText">0 / 1000 XP</span>
+  </div>
+
   <div id="xpContainer">
     <div id="xpBar"></div>
   </div>
-  <div id="xpText"></div>
 
   <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>
   <div id="result"></div>
@@ -210,6 +216,7 @@ const pityDisplay = document.getElementById("pityDisplay");
 
 const xpBar = document.getElementById("xpBar");
 const xpText = document.getElementById("xpText");
+const levelText = document.getElementById("levelText");
 
 const historyBtn = document.getElementById("historyBtn");
 const historyOverlay = document.getElementById("historyOverlay");
@@ -267,14 +274,20 @@ function addXP(amount) {
   return next;
 }
 
-/* XP BAR */
-function updateXPBar() {
+/* XP + LEVEL */
+function getLevel(totalXP) {
+  return Math.floor(totalXP / XP_PER_BAR) + 1;
+}
+
+function updateXPUI() {
   const totalXP = getTotalXP();
-  const current = totalXP % XP_PER_BAR;
-  const percent = (current / XP_PER_BAR) * 100;
+  const currentXP = totalXP % XP_PER_BAR;
+  const percent = (currentXP / XP_PER_BAR) * 100;
+  const level = getLevel(totalXP);
 
   xpBar.style.width = `${percent}%`;
-  xpText.textContent = `${current} / ${XP_PER_BAR} XP`;
+  xpText.textContent = `${currentXP} / ${XP_PER_BAR} XP`;
+  levelText.textContent = `Level ${level}`;
 }
 
 /* REWARDS + XP */
@@ -313,7 +326,7 @@ function updatePityUI() {
 }
 
 updatePityUI();
-updateXPBar();
+updateXPUI();
 
 /* ROLL */
 rollBtn.onclick = async () => {
@@ -335,7 +348,7 @@ rollBtn.onclick = async () => {
     updatePityUI();
 
     addXP(xp);
-    updateXPBar();
+    updateXPUI();
 
     saveRoll({
       rollNumber: getRollLog().length + 1,
