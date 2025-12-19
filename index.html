@@ -190,11 +190,6 @@ const pityDisplay = document.getElementById("pityDisplay");
 const historyOverlay = document.getElementById("historyOverlay");
 const historyList = document.getElementById("historyList");
 
-/* LEVEL UI */
-const levelText = document.getElementById("levelText");
-const xpFill = document.getElementById("xpFill");
-const xpNumbers = document.getElementById("xpNumbers");
-
 /* STORAGE KEYS */
 const STORAGE_KEY = "birthday_roll_log";
 const PITY_KEY = "birthday_pity";
@@ -212,39 +207,6 @@ function hideTitle() {
 showTitle();
 enterBanner.onclick = hideTitle;
 titleBtn.onclick = () => !isRolling && showTitle();
-
-/* DATA */
-function getPity() {
-  return JSON.parse(localStorage.getItem(PITY_KEY)) || { legendary: 0 };
-}
-function savePity(p) {
-  localStorage.setItem(PITY_KEY, JSON.stringify(p));
-}
-function updatePityUI() {
-  pityDisplay.textContent = `Legendary Pity: ${getPity().legendary} / 90`;
-}
-
-/* LEVEL SYSTEM */
-function getLevelData() {
-  return JSON.parse(localStorage.getItem(LEVEL_KEY)) || {
-    level: 1,
-    xp: 0
-  };
-}
-function saveLevelData(d) {
-  localStorage.setItem(LEVEL_KEY, JSON.stringify(d));
-}
-function xpToNext(level) {
-  return 100 + (level - 1) * 25;
-}
-function updateLevelUI() {
-  const d = getLevelData();
-  const needed = xpToNext(d.level);
-  const pct = Math.min(d.xp / needed, 1) * 100;
-  levelText.textContent = `Lv. ${d.level}`;
-  xpFill.style.width = pct + "%";
-  xpNumbers.textContent = `${d.xp} / ${needed} XP`;
-}
 
 /* HISTORY */
 function getHistory() {
@@ -264,75 +226,7 @@ function renderHistory() {
     : "<p style='opacity:.6'>No rolls yet.</p>";
 }
 
-/* ROLL DATA */
-const xpValues = { Common:10, Rare:25, Epic:60, Legendary:120 };
-
-function rollOnce() {
-  const pity = getPity();
-  const chance = 1 + pity.legendary * 0.5;
-  if (pity.legendary >= 90) return "Legendary";
-  const n = Math.random() * 100;
-  if (n < chance) return "Legendary";
-  if (n < chance + 9) return "Epic";
-  if (n < chance + 29) return "Rare";
-  return "Common";
-}
-
-updatePityUI();
-updateLevelUI();
-
-/* ROLL */
-rollBtn.onclick = async () => {
-  if (isRolling) return;
-  isRolling = true;
-
-  rollBtn.disabled = historyBtn.disabled = titleBtn.disabled = true;
-  resultDiv.innerHTML = "";
-
-  const rollResults = [];
-
-  for (let i = 0; i < 10; i++) {
-    await new Promise(r => setTimeout(r, 250));
-
-    const rarity = rollOnce();
-    rollResults.push(rarity);
-
-    const xpGain = xpValues[rarity];
-
-    const levelData = getLevelData();
-    levelData.xp += xpGain;
-
-    while (levelData.xp >= xpToNext(levelData.level)) {
-      levelData.xp -= xpToNext(levelData.level);
-      levelData.level++;
-    }
-
-    saveLevelData(levelData);
-    updateLevelUI();
-
-    const pity = getPity();
-    rarity === "Legendary" ? pity.legendary = 0 : pity.legendary++;
-    savePity(pity);
-    updatePityUI();
-
-    const card = document.createElement("div");
-    card.className = `card ${rarity}`;
-    card.innerHTML = `<strong>${rarity}</strong><br>+${xpGain} XP`;
-    resultDiv.appendChild(card);
-
-    if (rarity === "Legendary") break;
-  }
-
-  saveHistory({
-    time: new Date().toLocaleString(),
-    results: rollResults
-  });
-
-  rollBtn.disabled = historyBtn.disabled = titleBtn.disabled = false;
-  isRolling = false;
-};
-
-/* HISTORY */
+/* HISTORY BUTTON */
 historyBtn.onclick = () => {
   renderHistory();
   historyOverlay.style.display = "block";
