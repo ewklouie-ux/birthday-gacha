@@ -3,333 +3,220 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="theme-color" content="#4f46e5">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-
-<link rel="manifest" href="/birthday-gacha/site.webmanifest">
-<link rel="icon" type="image/png" sizes="192x192" href="/birthday-gacha/icons/android-chrome-192x192.png">
-<link rel="icon" type="image/png" sizes="512x512" href="/birthday-gacha/icons/android-chrome-512x512.png">
-<link rel="apple-touch-icon" href="/birthday-gacha/icons/apple-touch-icon.png">
-
-<title>Birthday Limited Banner</title>
+<title>Birthday Gacha</title>
 
 <style>
-body {
-  margin: 0;
-  background: radial-gradient(circle at top, #111433, #0b0d1a);
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-  color: white;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
-}
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(circle at top, #1c1c2b, #0d0d16);
+    color: white;
+    text-align: center;
+    overflow: hidden;
+  }
 
-#app {
-  width: 100%;
-  max-width: 420px;
-  padding: 20px;
-  text-align: center;
-  transition: opacity 0.4s ease, filter 0.4s ease;
-}
+  button {
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    border: none;
+    border-radius: 14px;
+    padding: 14px 24px;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 12px;
+  }
 
-.locked {
-  opacity: 0.12;
-  filter: blur(6px);
-  pointer-events: none;
-}
+  #banner {
+    font-size: 28px;
+    margin-top: 24px;
+  }
 
-#result {
-  min-height: 120px;
-  max-height: 45vh;
-  overflow-y: auto;
-}
+  #level-container {
+    width: 80%;
+    max-width: 420px;
+    margin: 14px auto 6px;
+  }
 
-.card {
-  margin: 6px 0;
-  padding: 12px;
-  border-radius: 14px;
-  background: #1a1d33;
-  animation: fadeIn 0.3s ease forwards;
-}
+  #level-text {
+    font-size: 14px;
+    margin-bottom: 6px;
+    opacity: 0.85;
+  }
 
-.Common { border-left: 6px solid #b0b0b0; }
-.Rare { border-left: 6px solid #4da6ff; }
-.Epic { border-left: 6px solid #b066ff; }
-.Legendary { border-left: 6px solid gold; }
+  #level-bar {
+    height: 10px;
+    background: rgba(255,255,255,0.15);
+    border-radius: 8px;
+    overflow: hidden;
+  }
 
-button {
-  width: 100%;
-  padding: 14px;
-  font-size: 1.1rem;
-  border-radius: 14px;
-  border: none;
-  background: #4f46e5;
-  color: white;
-  cursor: pointer;
-  margin-top: 10px;
-}
+  #level-fill {
+    height: 100%;
+    width: 0%;
+    background: linear-gradient(90deg, #ffd86f, #ff9f43);
+    transition: width 0.4s ease;
+  }
 
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+  #card {
+    margin: 30px auto;
+    width: 260px;
+    height: 160px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: rgba(255,255,255,0.1);
+    box-shadow: 0 0 20px rgba(0,0,0,0.4);
+    transition: transform 0.25s ease, box-shadow 0.25s ease;
+  }
 
-#historyBtn { background: #2a2e5a; }
-#titleBtn { background: #1f234a; }
+  .common { border: 2px solid #bbb; }
+  .rare { border: 2px solid #4da6ff; }
+  .epic { border: 2px solid #c77dff; box-shadow: 0 0 18px #c77dff88; }
+  .legendary {
+    border: 2px solid #ffd86f;
+    box-shadow: 0 0 28px #ffd86f;
+    animation: pulse 1.2s infinite;
+  }
 
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
+  @keyframes pulse {
+    0% { box-shadow: 0 0 20px #ffd86f; }
+    50% { box-shadow: 0 0 36px #ffd86f; }
+    100% { box-shadow: 0 0 20px #ffd86f; }
+  }
 
-/* TITLE */
-#bannerSplash {
-  display: flex;
-  position: fixed;
-  inset: 0;
-  z-index: 4000;
-  background: radial-gradient(circle at top, rgba(255,215,0,0.22), rgba(0,0,0,0.98));
-  backdrop-filter: blur(14px);
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
+  #level-up {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: linear-gradient(135deg, #ffd86f, #ff9f43);
+    color: black;
+    padding: 10px 18px;
+    border-radius: 14px;
+    font-weight: bold;
+    display: none;
+    z-index: 50;
+  }
 
-/* HISTORY */
-#historyOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: #0f1220;
-  z-index: 3000;
-  padding: 20px;
-  overflow-y: auto;
-}
-
-/* LEGENDARY */
-#legendaryOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 5000;
-  background: radial-gradient(circle, rgba(255,215,0,0.35), rgba(0,0,0,0.95));
-  backdrop-filter: blur(6px);
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
+  #controls {
+    margin-top: 12px;
+  }
 </style>
 </head>
 
 <body>
 
-<div id="bannerSplash">
-  <div>
-    <h1 style="font-size:2.8rem;">🎂 LIMITED BIRTHDAY BANNER 🎂</h1>
-    <p style="opacity:.85;margin:16px 0;">Available for a limited time only</p>
-    <button id="enterBanner" style="max-width:260px;">Enter Banner</button>
+<div id="banner">🎂 Limited Birthday Banner 🎂</div>
+
+<div id="level-container">
+  <div id="level-text">Level 1 — 0 / 100 XP</div>
+  <div id="level-bar">
+    <div id="level-fill"></div>
   </div>
 </div>
 
-<div id="app">
-  <h1>🎂 Limited Birthday Banner</h1>
-  <p>Tap to Roll ×10</p>
-  <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>
-  <div id="result"></div>
-  <button id="rollBtn">🎲 Roll 10</button>
-  <button id="historyBtn">📜 History</button>
-  <button id="titleBtn">🎂 Title Screen</button>
+<div id="card">Tap Roll ✨</div>
+
+<div id="controls">
+  <button onclick="roll()">Roll</button>
 </div>
 
-<div id="historyOverlay">
-  <button id="closeHistory">Close</button>
-  <h2>Roll History</h2>
-  <div id="historyList"></div>
-</div>
-
-<div id="legendaryOverlay">
-  <div>
-    <h1>🌟 LEGENDARY 🌟</h1>
-    <p id="legendaryPrize"></p>
-    <button id="ackLegendary">Accept Gift</button>
-  </div>
-</div>
+<div id="level-up">LEVEL UP!</div>
 
 <script>
-let isRolling = false;
+  // ===============================
+  // STATE
+  // ===============================
+  let totalXP = 0;
+  let currentLevel = 1;
 
-const app = document.getElementById("app");
-const bannerSplash = document.getElementById("bannerSplash");
-const enterBanner = document.getElementById("enterBanner");
-const titleBtn = document.getElementById("titleBtn");
-const rollBtn = document.getElementById("rollBtn");
-const resultDiv = document.getElementById("result");
-const pityDisplay = document.getElementById("pityDisplay");
+  const levelThresholds = [0, 100, 250, 500, 900, 1400, 2000];
 
-const historyBtn = document.getElementById("historyBtn");
-const historyOverlay = document.getElementById("historyOverlay");
-const historyList = document.getElementById("historyList");
-const closeHistory = document.getElementById("closeHistory");
+  const card = document.getElementById("card");
+  const levelText = document.getElementById("level-text");
+  const levelFill = document.getElementById("level-fill");
+  const levelUpToast = document.getElementById("level-up");
 
-const legendaryOverlay = document.getElementById("legendaryOverlay");
-const legendaryPrize = document.getElementById("legendaryPrize");
-const ackLegendary = document.getElementById("ackLegendary");
+  // ===============================
+  // RNG
+  // ===============================
+  function roll() {
+    const r = Math.random();
+    let rarity, text, xp = 0;
 
-const STORAGE_KEY = "birthday_roll_log";
-const PITY_KEY = "birthday_pity";
-
-/* TITLE */
-function showTitle() {
-  bannerSplash.style.display = "flex";
-  app.classList.add("locked");
-}
-function hideTitle() {
-  bannerSplash.style.display = "none";
-  app.classList.remove("locked");
-}
-showTitle();
-enterBanner.onclick = hideTitle;
-titleBtn.onclick = () => {
-  if (isRolling || legendaryOverlay.style.display === "flex") return;
-  showTitle();
-};
-
-/* STORAGE */
-function getRollLog() {
-  return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-}
-function saveRoll(entry) {
-  const log = getRollLog();
-  log.push(entry);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(log));
-}
-function getPity() {
-  return JSON.parse(localStorage.getItem(PITY_KEY)) || { legendary: 0 };
-}
-function savePity(p) {
-  localStorage.setItem(PITY_KEY, JSON.stringify(p));
-}
-function updatePityUI() {
-  pityDisplay.textContent = `Legendary Pity: ${getPity().legendary} / 90`;
-}
-
-/* REWARDS + XP */
-const rewardPools = {
-  Epic: ["Prepared note","Small gift","10-minute massage"],
-  Legendary: ["Main Birthday Gift","Deep Handwritten Letter"]
-};
-
-const xpValues = {
-  Common: 10,
-  Rare: 25,
-  Epic: 60,
-  Legendary: 120
-};
-
-function rollOnce() {
-  const pity = getPity();
-  const chance = 1 + pity.legendary * 0.5;
-  if (pity.legendary >= 90) return "Legendary";
-
-  const n = Math.random() * 100;
-  if (n < chance) return "Legendary";
-  if (n < chance + 9) return "Epic";
-  if (n < chance + 29) return "Rare";
-  return "Common";
-}
-
-function getReward(rarity) {
-  return rewardPools[rarity]
-    ? rewardPools[rarity][Math.floor(Math.random() * rewardPools[rarity].length)]
-    : null;
-}
-
-updatePityUI();
-
-/* ROLL */
-rollBtn.onclick = async () => {
-  isRolling = true;
-  rollBtn.disabled = true;
-  titleBtn.disabled = true;
-  resultDiv.innerHTML = "";
-
-  for (let i = 0; i < 10; i++) {
-    await new Promise(r => setTimeout(r, 250));
-
-    const rarity = rollOnce();
-    const xp = xpValues[rarity];
-    const reward = getReward(rarity);
-    const pity = getPity();
-
-    rarity === "Legendary" ? pity.legendary = 0 : pity.legendary++;
-    savePity(pity);
-    updatePityUI();
-
-    saveRoll({
-      rollNumber: getRollLog().length + 1,
-      rarity,
-      xp,
-      prize: reward,
-      timestamp: Date.now()
-    });
-
-    const card = document.createElement("div");
-    card.className = `card ${rarity}`;
-    card.innerHTML = `
-      <strong>${rarity}</strong><br>
-      +${xp} XP
-      ${reward ? `<br><em>${reward}</em>` : ""}
-    `;
-    resultDiv.appendChild(card);
-
-    if (rarity === "Legendary") {
-      hideTitle();
-      legendaryPrize.textContent = reward;
-      app.classList.add("locked");
-      legendaryOverlay.style.display = "flex";
-      break;
+    if (r < 0.6) {
+      rarity = "common";
+      xp = 10;
+      text = `Common\n+${xp} XP`;
+    } else if (r < 0.85) {
+      rarity = "rare";
+      xp = 25;
+      text = `Rare\n+${xp} XP`;
+    } else if (r < 0.97) {
+      rarity = "epic";
+      xp = 60;
+      text = `Epic\n+${xp} XP\n💜 Reward`;
+    } else {
+      rarity = "legendary";
+      xp = 120;
+      text = `LEGENDARY\n+${xp} XP\n🌟 Reward`;
     }
+
+    applyCard(rarity, text);
+    gainXP(xp);
   }
 
-  rollBtn.disabled = false;
-  titleBtn.disabled = false;
-  isRolling = false;
-};
-
-ackLegendary.onclick = () => {
-  legendaryOverlay.style.display = "none";
-  app.classList.remove("locked");
-};
-
-/* HISTORY */
-historyBtn.onclick = () => {
-  historyOverlay.style.display = "block";
-  renderHistory();
-};
-closeHistory.onclick = () => {
-  historyOverlay.style.display = "none";
-};
-
-function renderHistory() {
-  const log = getRollLog().slice().reverse();
-  historyList.innerHTML = log.length ? "" : "<p>No rolls yet.</p>";
-  for (const e of log) {
-    const div = document.createElement("div");
-    div.className = "card";
-    div.innerHTML = `
-      <strong>#${e.rollNumber}</strong> — ${e.rarity}<br>
-      +${e.xp} XP
-      ${e.prize ? `<br>${e.prize}` : ""}
-      <br><span style="opacity:.6;font-size:.8rem">
-        ${new Date(e.timestamp).toLocaleString()}
-      </span>`;
-    historyList.appendChild(div);
+  // ===============================
+  // UI HELPERS
+  // ===============================
+  function applyCard(rarity, text) {
+    card.className = rarity;
+    card.textContent = text;
+    card.style.transform = "scale(1.05)";
+    setTimeout(() => card.style.transform = "scale(1)", 180);
   }
-}
+
+  function gainXP(amount) {
+    totalXP += amount;
+
+    let nextLevel = currentLevel;
+    while (
+      nextLevel + 1 < levelThresholds.length &&
+      totalXP >= levelThresholds[nextLevel]
+    ) {
+      nextLevel++;
+    }
+
+    if (nextLevel > currentLevel) {
+      currentLevel = nextLevel;
+      showLevelUp();
+    }
+
+    updateLevelUI();
+  }
+
+  function updateLevelUI() {
+    const curr = levelThresholds[currentLevel - 1];
+    const next = levelThresholds[currentLevel] ?? curr + 300;
+    const progress = Math.min(
+      (totalXP - curr) / (next - curr),
+      1
+    );
+
+    levelText.textContent =
+      `Level ${currentLevel} — ${totalXP - curr} / ${next - curr} XP`;
+
+    levelFill.style.width = `${progress * 100}%`;
+  }
+
+  function showLevelUp() {
+    levelUpToast.style.display = "block";
+    setTimeout(() => {
+      levelUpToast.style.display = "none";
+    }, 1400);
+  }
 </script>
+
 </body>
 </html>
