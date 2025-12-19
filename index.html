@@ -53,7 +53,7 @@ body {
 
 #xpBar {
   height: 14px;
-  width: 30%; /* STATIC FOR STEP 2 */
+  width: 0%;
   border-radius: 999px;
   background: linear-gradient(
     90deg,
@@ -62,7 +62,7 @@ body {
     #a855f7,
     #ec4899
   );
-  transition: width 0.4s ease;
+  transition: width 0.35s ease;
 }
 
 #xpText {
@@ -168,11 +168,10 @@ button:disabled {
   <h1>🎂 Limited Birthday Banner</h1>
   <p>Tap to Roll ×10</p>
 
-  <!-- XP BAR (STEP 2) -->
   <div id="xpContainer">
     <div id="xpBar"></div>
   </div>
-  <div id="xpText">XP Progress</div>
+  <div id="xpText"></div>
 
   <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>
   <div id="result"></div>
@@ -198,6 +197,9 @@ button:disabled {
 <script>
 let isRolling = false;
 
+/* XP CONFIG */
+const XP_PER_BAR = 1000;
+
 const app = document.getElementById("app");
 const bannerSplash = document.getElementById("bannerSplash");
 const enterBanner = document.getElementById("enterBanner");
@@ -205,6 +207,9 @@ const titleBtn = document.getElementById("titleBtn");
 const rollBtn = document.getElementById("rollBtn");
 const resultDiv = document.getElementById("result");
 const pityDisplay = document.getElementById("pityDisplay");
+
+const xpBar = document.getElementById("xpBar");
+const xpText = document.getElementById("xpText");
 
 const historyBtn = document.getElementById("historyBtn");
 const historyOverlay = document.getElementById("historyOverlay");
@@ -257,14 +262,19 @@ function getTotalXP() {
   return JSON.parse(localStorage.getItem(XP_KEY)) || 0;
 }
 function addXP(amount) {
-  const currentXP = getTotalXP();
-  const newXP = currentXP + amount;
-  localStorage.setItem(XP_KEY, JSON.stringify(newXP));
-  return newXP;
+  const next = getTotalXP() + amount;
+  localStorage.setItem(XP_KEY, JSON.stringify(next));
+  return next;
 }
 
-function updatePityUI() {
-  pityDisplay.textContent = `Legendary Pity: ${getPity().legendary} / 90`;
+/* XP BAR */
+function updateXPBar() {
+  const totalXP = getTotalXP();
+  const current = totalXP % XP_PER_BAR;
+  const percent = (current / XP_PER_BAR) * 100;
+
+  xpBar.style.width = `${percent}%`;
+  xpText.textContent = `${current} / ${XP_PER_BAR} XP`;
 }
 
 /* REWARDS + XP */
@@ -298,7 +308,12 @@ function getReward(rarity) {
     : null;
 }
 
+function updatePityUI() {
+  pityDisplay.textContent = `Legendary Pity: ${getPity().legendary} / 90`;
+}
+
 updatePityUI();
+updateXPBar();
 
 /* ROLL */
 rollBtn.onclick = async () => {
@@ -318,6 +333,9 @@ rollBtn.onclick = async () => {
     rarity === "Legendary" ? pity.legendary = 0 : pity.legendary++;
     savePity(pity);
     updatePityUI();
+
+    addXP(xp);
+    updateXPBar();
 
     saveRoll({
       rollNumber: getRollLog().length + 1,
