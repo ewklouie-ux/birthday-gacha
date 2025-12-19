@@ -42,6 +42,35 @@ body {
   pointer-events: none;
 }
 
+/* XP BAR */
+#xpContainer {
+  margin: 12px 0 16px;
+  background: #12142a;
+  border-radius: 999px;
+  padding: 4px;
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.6);
+}
+
+#xpBar {
+  height: 14px;
+  width: 30%; /* STATIC FOR STEP 2 */
+  border-radius: 999px;
+  background: linear-gradient(
+    90deg,
+    #38bdf8,
+    #6366f1,
+    #a855f7,
+    #ec4899
+  );
+  transition: width 0.4s ease;
+}
+
+#xpText {
+  margin-top: 6px;
+  font-size: 0.75rem;
+  opacity: 0.75;
+}
+
 #result {
   min-height: 120px;
   max-height: 45vh;
@@ -138,6 +167,13 @@ button:disabled {
 <div id="app">
   <h1>🎂 Limited Birthday Banner</h1>
   <p>Tap to Roll ×10</p>
+
+  <!-- XP BAR (STEP 2) -->
+  <div id="xpContainer">
+    <div id="xpBar"></div>
+  </div>
+  <div id="xpText">XP Progress</div>
+
   <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>
   <div id="result"></div>
   <button id="rollBtn">🎲 Roll 10</button>
@@ -216,7 +252,7 @@ function savePity(p) {
   localStorage.setItem(PITY_KEY, JSON.stringify(p));
 }
 
-/* XP STORAGE (STEP 1) */
+/* XP STORAGE */
 function getTotalXP() {
   return JSON.parse(localStorage.getItem(XP_KEY)) || 0;
 }
