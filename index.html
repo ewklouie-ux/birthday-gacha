@@ -49,9 +49,24 @@ button {
   margin-top: 10px;
 }
 
+button.secondary {
+  background: #2a2e5a;
+}
+
 button:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* HISTORY OVERLAY */
+#historyOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #0f1220;
+  z-index: 3000;
+  padding: 20px;
+  overflow-y: auto;
 }
 </style>
 </head>
@@ -61,16 +76,32 @@ button:disabled {
 <div id="app">
   <h1>🎂 Limited Birthday Banner</h1>
   <p id="pityDisplay" style="opacity:.7;font-size:.85rem;"></p>
+
   <div id="result"></div>
+
   <button id="rollBtn">🎲 Roll 10</button>
+  <button id="historyBtn" class="secondary">📜 History</button>
+</div>
+
+<!-- HISTORY OVERLAY -->
+<div id="historyOverlay">
+  <button id="closeHistory" class="secondary">← Back</button>
+  <h2>Roll History</h2>
+  <div id="historyList"></div>
 </div>
 
 <script>
 let isRolling = false;
 
 const rollBtn = document.getElementById("rollBtn");
+const historyBtn = document.getElementById("historyBtn");
+const closeHistory = document.getElementById("closeHistory");
+
 const resultDiv = document.getElementById("result");
 const pityDisplay = document.getElementById("pityDisplay");
+
+const historyOverlay = document.getElementById("historyOverlay");
+const historyList = document.getElementById("historyList");
 
 const STORAGE_KEY = "birthday_roll_log";
 const PITY_KEY = "birthday_pity";
@@ -127,16 +158,16 @@ function getReward(rarity) {
 
 updatePityUI();
 
-/* ✅ FIXED ROLL LOGIC */
+/* ✅ ROLLING (UNCHANGED) */
 rollBtn.onclick = async () => {
   if (isRolling) return;
 
   isRolling = true;
   rollBtn.disabled = true;
+  historyBtn.disabled = true;
   resultDiv.innerHTML = "";
 
   for (let i = 0; i < 10; i++) {
-    // ⏳ FORCE pacing
     await new Promise(res => setTimeout(res, 250));
 
     const rarity = rollOnce();
@@ -144,11 +175,7 @@ rollBtn.onclick = async () => {
     const reward = getReward(rarity);
     const pity = getPity();
 
-    if (rarity === "Legendary") {
-      pity.legendary = 0;
-    } else {
-      pity.legendary++;
-    }
+    rarity === "Legendary" ? pity.legendary = 0 : pity.legendary++;
     savePity(pity);
     updatePityUI();
 
@@ -169,15 +196,42 @@ rollBtn.onclick = async () => {
     `;
     resultDiv.appendChild(card);
 
-    // 🛑 HARD STOP ON LEGENDARY
-    if (rarity === "Legendary") {
-      break;
-    }
+    if (rarity === "Legendary") break;
   }
 
   rollBtn.disabled = false;
+  historyBtn.disabled = false;
   isRolling = false;
 };
+
+/* HISTORY */
+historyBtn.onclick = () => {
+  historyOverlay.style.display = "block";
+  renderHistory();
+};
+
+closeHistory.onclick = () => {
+  historyOverlay.style.display = "none";
+};
+
+function renderHistory() {
+  const log = getRollLog().slice().reverse();
+  historyList.innerHTML = log.length ? "" : "<p>No rolls yet.</p>";
+
+  for (const e of log) {
+    const div = document.createElement("div");
+    div.className = "card";
+    div.innerHTML = `
+      <strong>#${e.rollNumber}</strong> — ${e.rarity}<br>
+      +${e.xp} XP
+      ${e.prize ? `<br>${e.prize}` : ""}
+      <br><span style="opacity:.6;font-size:.8rem">
+        ${new Date(e.timestamp).toLocaleString()}
+      </span>
+    `;
+    historyList.appendChild(div);
+  }
+}
 </script>
 
 </body>
