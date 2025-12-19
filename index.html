@@ -43,30 +43,28 @@ body {
 }
 
 /* LEVEL BAR */
-#levelContainer {
-  margin-bottom: 12px;
-  text-align: left;
+#levelBox {
+  background:#0f1220;
+  padding:10px;
+  border-radius:12px;
+  margin-bottom:12px;
 }
-
 #levelText {
-  font-size: .85rem;
-  opacity: .85;
-  margin-bottom: 4px;
+  font-size:.9rem;
+  opacity:.85;
 }
-
 #xpBar {
-  width: 100%;
-  height: 10px;
-  background: #1a1d33;
-  border-radius: 999px;
-  overflow: hidden;
+  height:8px;
+  background:#1a1d33;
+  border-radius:999px;
+  overflow:hidden;
+  margin-top:6px;
 }
-
 #xpFill {
-  height: 100%;
-  width: 0%;
-  background: linear-gradient(90deg, #4da6ff, #b066ff);
-  transition: width 0.4s ease;
+  height:100%;
+  width:0%;
+  background:linear-gradient(90deg,#4f46e5,#a855f7);
+  transition:width .4s ease;
 }
 
 #result {
@@ -99,30 +97,36 @@ button {
   margin-top: 10px;
 }
 
-/* TITLE */
-#bannerSplash {
-  display: flex;
-  position: fixed;
-  inset: 0;
-  z-index: 4000;
-  background: radial-gradient(circle at top, rgba(255,215,0,0.22), rgba(0,0,0,0.98));
-  backdrop-filter: blur(14px);
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+#historyBtn { background:#2a2e5a; }
+#titleBtn { background:#1f234a; }
+
+/* OVERLAYS */
+#bannerSplash, #historyOverlay, #legendaryOverlay {
+  position:fixed;
+  inset:0;
+  display:none;
+  justify-content:center;
+  align-items:center;
+  text-align:center;
 }
 
-/* LEGENDARY */
+#bannerSplash {
+  z-index:4000;
+  background:radial-gradient(circle at top,rgba(255,215,0,.22),rgba(0,0,0,.98));
+  backdrop-filter:blur(14px);
+}
+
+#historyOverlay {
+  z-index:3000;
+  background:#0f1220;
+  padding:20px;
+  overflow-y:auto;
+}
+
 #legendaryOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  z-index: 5000;
-  background: radial-gradient(circle, rgba(255,215,0,0.35), rgba(0,0,0,0.95));
-  backdrop-filter: blur(6px);
-  justify-content: center;
-  align-items: center;
-  text-align: center;
+  z-index:5000;
+  background:radial-gradient(circle,rgba(255,215,0,.35),rgba(0,0,0,.95));
+  backdrop-filter:blur(6px);
 }
 </style>
 </head>
@@ -132,22 +136,28 @@ button {
 <div id="bannerSplash">
   <div>
     <h1 style="font-size:2.6rem;">🎂 LIMITED BIRTHDAY BANNER 🎂</h1>
+    <p style="opacity:.85;margin:16px 0;">Available for a limited time only</p>
     <button id="enterBanner">Enter Banner</button>
   </div>
 </div>
 
 <div id="app">
-  <h1>🎂 Limited Birthday Banner</h1>
-
-  <div id="levelContainer">
-    <div id="levelText"></div>
+  <div id="levelBox">
+    <div id="levelText">Level 1 · 0 / 100 XP</div>
     <div id="xpBar"><div id="xpFill"></div></div>
   </div>
 
-  <div id="pityDisplay" style="opacity:.7;font-size:.85rem;"></div>
   <div id="result"></div>
 
-  <button id="rollBtn">🎲 Roll 10</button>
+  <button id="rollBtn">🎲 Roll ×10</button>
+  <button id="historyBtn">📜 History</button>
+  <button id="titleBtn">🎂 Title Screen</button>
+</div>
+
+<div id="historyOverlay">
+  <button id="closeHistory">Close</button>
+  <h2>Roll History</h2>
+  <div id="historyList"></div>
 </div>
 
 <div id="legendaryOverlay">
@@ -159,106 +169,130 @@ button {
 </div>
 
 <script>
-let isRolling = false;
+let isRolling=false;
 
-/* ---------- TITLE CONTROL ---------- */
-const bannerSplash = document.getElementById("bannerSplash");
-const app = document.getElementById("app");
-const enterBanner = document.getElementById("enterBanner");
+const STORAGE_LOG="birthday_log";
+const STORAGE_XP="birthday_xp";
 
-function showTitle() {
-  bannerSplash.style.display = "flex";
-  app.classList.add("locked");
-}
+const xpValues={Common:10,Rare:25,Epic:60,Legendary:120};
 
-function hideTitle() {
-  bannerSplash.style.display = "none";
-  app.classList.remove("locked");
-}
-
-showTitle();
-enterBanner.onclick = hideTitle;
-
-/* ---------- PLAYER / LEVEL ---------- */
-const PLAYER_KEY = "birthday_player";
-
-function getPlayer() {
-  return JSON.parse(localStorage.getItem(PLAYER_KEY)) || { level: 1, xp: 0 };
-}
-function savePlayer(p) {
-  localStorage.setItem(PLAYER_KEY, JSON.stringify(p));
-}
-function xpToNext(level) {
-  return Math.floor(60 + level * 18);
-}
-function gainXP(amount) {
-  const p = getPlayer();
-  p.xp += amount;
-  while (p.xp >= xpToNext(p.level)) {
-    p.xp -= xpToNext(p.level);
-    p.level++;
-  }
-  savePlayer(p);
-  updateLevelUI();
-}
-function updateLevelUI() {
-  const p = getPlayer();
-  const needed = xpToNext(p.level);
-  const percent = (p.xp / needed) * 100;
-  document.getElementById("levelText").textContent =
-    `Level ${p.level} — ${p.xp} / ${needed} XP`;
-  document.getElementById("xpFill").style.width = percent + "%";
-}
-
-/* ---------- PITY ---------- */
-const PITY_KEY = "birthday_pity";
-function getPity() {
-  return JSON.parse(localStorage.getItem(PITY_KEY)) || { legendary: 0 };
-}
-function savePity(p) {
-  localStorage.setItem(PITY_KEY, JSON.stringify(p));
-}
-function updatePityUI() {
-  document.getElementById("pityDisplay").textContent =
-    `Legendary Pity: ${getPity().legendary} / 90`;
-}
-
-/* ---------- ROLL ---------- */
-updateLevelUI();
-updatePityUI();
-
-const xpValues = { Common: 10, Rare: 25, Epic: 60, Legendary: 120 };
-
-function rollOnce() {
-  const pity = getPity();
-  const chance = 1 + pity.legendary * 0.5;
-  if (pity.legendary >= 90) return "Legendary";
-  const n = Math.random() * 100;
-  if (n < chance) return "Legendary";
-  if (n < chance + 9) return "Epic";
-  if (n < chance + 29) return "Rare";
-  return "Common";
-}
-
-document.getElementById("rollBtn").onclick = async () => {
-  if (isRolling) return;
-  isRolling = true;
-  result.innerHTML = "";
-
-  for (let i = 0; i < 10; i++) {
-    await new Promise(r => setTimeout(r, 200));
-    const rarity = rollOnce();
-    const xp = xpValues[rarity];
-    gainXP(xp);
-
-    const card = document.createElement("div");
-    card.className = `card ${rarity}`;
-    card.innerHTML = `<strong>${rarity}</strong><br>+${xp} XP`;
-    result.appendChild(card);
-  }
-  isRolling = false;
+const rewardPools={
+  Epic:["Prepared note","Small gift","10-minute massage"],
+  Legendary:["Main Birthday Gift","Deep Handwritten Letter"]
 };
-</script>
 
+const app=document.getElementById("app");
+const banner=document.getElementById("bannerSplash");
+const history=document.getElementById("historyOverlay");
+const legendary=document.getElementById("legendaryOverlay");
+
+const rollBtn=document.getElementById("rollBtn");
+const historyBtn=document.getElementById("historyBtn");
+const titleBtn=document.getElementById("titleBtn");
+const enterBanner=document.getElementById("enterBanner");
+const closeHistory=document.getElementById("closeHistory");
+const ackLegendary=document.getElementById("ackLegendary");
+
+const result=document.getElementById("result");
+const historyList=document.getElementById("historyList");
+const levelText=document.getElementById("levelText");
+const xpFill=document.getElementById("xpFill");
+const legendaryPrize=document.getElementById("legendaryPrize");
+
+function getXP(){return JSON.parse(localStorage.getItem(STORAGE_XP))||{xp:0,level:1};}
+function saveXP(d){localStorage.setItem(STORAGE_XP,JSON.stringify(d));}
+function xpNeeded(l){return 100+Math.floor(l*25);}
+
+function updateLevelUI(){
+  const d=getXP();
+  const need=xpNeeded(d.level);
+  levelText.textContent=`Level ${d.level} · ${d.xp} / ${need} XP`;
+  xpFill.style.width=Math.min(100,(d.xp/need)*100)+"%";
+}
+
+function logRoll(e){
+  const l=JSON.parse(localStorage.getItem(STORAGE_LOG))||[];
+  l.push(e);
+  localStorage.setItem(STORAGE_LOG,JSON.stringify(l));
+}
+
+function rollOnce(){
+  const n=Math.random()*100;
+  if(n<1)return"Legendary";
+  if(n<10)return"Epic";
+  if(n<30)return"Rare";
+  return"Common";
+}
+
+function getReward(r){
+  return rewardPools[r]?.[Math.floor(Math.random()*rewardPools[r].length)]||null;
+}
+
+/* TITLE */
+function showTitle(){banner.style.display="flex";app.classList.add("locked");}
+function hideTitle(){banner.style.display="none";app.classList.remove("locked");}
+showTitle();
+
+enterBanner.onclick=hideTitle;
+titleBtn.onclick=()=>!isRolling&&showTitle();
+
+/* HISTORY */
+historyBtn.onclick=()=>{
+  history.style.display="block";
+  historyList.innerHTML="";
+  const l=JSON.parse(localStorage.getItem(STORAGE_LOG))||[];
+  l.slice().reverse().forEach(e=>{
+    const d=document.createElement("div");
+    d.className="card";
+    d.innerHTML=`<strong>${e.rarity}</strong> +${e.xp} XP<br>${e.reward||""}`;
+    historyList.appendChild(d);
+  });
+};
+closeHistory.onclick=()=>history.style.display="none";
+
+/* ROLL */
+rollBtn.onclick=async()=>{
+  isRolling=true;
+  rollBtn.disabled=true;
+  result.innerHTML="";
+
+  for(let i=0;i<10;i++){
+    await new Promise(r=>setTimeout(r,200));
+    const r=rollOnce();
+    const xp=xpValues[r];
+    const reward=getReward(r);
+
+    const d=getXP();
+    d.xp+=xp;
+    while(d.xp>=xpNeeded(d.level)){d.xp-=xpNeeded(d.level);d.level++;}
+    saveXP(d);
+    updateLevelUI();
+
+    logRoll({rarity:r,xp,reward});
+
+    const c=document.createElement("div");
+    c.className=`card ${r}`;
+    c.innerHTML=`<strong>${r}</strong><br>+${xp} XP${reward?`<br>${reward}`:""}`;
+    result.appendChild(c);
+
+    if(r==="Legendary"){
+      legendaryPrize.textContent=reward;
+      app.classList.add("locked");
+      legendary.style.display="flex";
+      break;
+    }
+  }
+
+  rollBtn.disabled=false;
+  isRolling=false;
+};
+
+ackLegendary.onclick=()=>{
+  legendary.style.display="none";
+  app.classList.remove("locked");
+};
+
+updateLevelUI();
+</script>
 </body>
 </html>
