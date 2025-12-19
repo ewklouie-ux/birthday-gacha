@@ -13,8 +13,6 @@
 <link rel="icon" type="image/png" sizes="192x192" href="/birthday-gacha/icons/android-chrome-192x192.png">
 <link rel="icon" type="image/png" sizes="512x512" href="/birthday-gacha/icons/android-chrome-512x512.png">
 <link rel="apple-touch-icon" href="/birthday-gacha/icons/apple-touch-icon.png">
-<link rel="icon" type="image/png" sizes="32x32" href="/birthday-gacha/icons/favicon-32x32.png">
-<link rel="icon" type="image/png" sizes="16x16" href="/birthday-gacha/icons/favicon-16x16.png">
 
 <title>Birthday Limited Banner</title>
 
@@ -88,31 +86,7 @@ button:disabled {
   to { opacity: 1; transform: translateY(0); }
 }
 
-/* LEVEL SYSTEM */
-#levelContainer {
-  background: #1b1d36;
-  border-radius: 14px;
-  padding: 10px;
-  margin-bottom: 12px;
-  text-align: left;
-  font-size: 0.9rem;
-}
-#levelBar {
-  width: 100%;
-  height: 10px;
-  border-radius: 10px;
-  background: #33354d;
-  overflow: hidden;
-  margin-top: 4px;
-}
-#levelProgress {
-  width: 0%;
-  height: 100%;
-  background: linear-gradient(90deg, #4f46e5, #8b5cf6);
-  transition: width 0.4s ease;
-}
-
-/* TITLE SCREEN */
+/* TITLE */
 #bannerSplash {
   display: flex;
   position: fixed;
@@ -163,10 +137,6 @@ button:disabled {
 
 <div id="app">
   <h1>🎂 Limited Birthday Banner</h1>
-  <div id="levelContainer">
-    <div>Level <span id="levelNum">1</span> — <span id="xpText">0 / 50 XP</span></div>
-    <div id="levelBar"><div id="levelProgress"></div></div>
-  </div>
   <p>Tap to Roll ×10</p>
   <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>
   <div id="result"></div>
@@ -196,7 +166,6 @@ const app = document.getElementById("app");
 const bannerSplash = document.getElementById("bannerSplash");
 const enterBanner = document.getElementById("enterBanner");
 const titleBtn = document.getElementById("titleBtn");
-
 const rollBtn = document.getElementById("rollBtn");
 const resultDiv = document.getElementById("result");
 const pityDisplay = document.getElementById("pityDisplay");
@@ -210,15 +179,10 @@ const legendaryOverlay = document.getElementById("legendaryOverlay");
 const legendaryPrize = document.getElementById("legendaryPrize");
 const ackLegendary = document.getElementById("ackLegendary");
 
-const levelNum = document.getElementById("levelNum");
-const xpText = document.getElementById("xpText");
-const levelProgress = document.getElementById("levelProgress");
-
 const STORAGE_KEY = "birthday_roll_log";
 const PITY_KEY = "birthday_pity";
-const XP_KEY = "birthday_xp_data";
 
-/* ---------- TITLE ---------- */
+/* TITLE */
 function showTitle() {
   bannerSplash.style.display = "flex";
   app.classList.add("locked");
@@ -234,7 +198,7 @@ titleBtn.onclick = () => {
   showTitle();
 };
 
-/* ---------- DATA ---------- */
+/* STORAGE */
 function getRollLog() {
   return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 }
@@ -253,43 +217,17 @@ function updatePityUI() {
   pityDisplay.textContent = `Legendary Pity: ${getPity().legendary} / 90`;
 }
 
-/* ---------- LEVEL ---------- */
-function getXPData() {
-  return JSON.parse(localStorage.getItem(XP_KEY)) || { level: 1, xp: 0 };
-}
-function saveXPData(d) {
-  localStorage.setItem(XP_KEY, JSON.stringify(d));
-}
-function xpForNextLevel(level) {
-  return level * 50;
-}
-function addXP(amount) {
-  const data = getXPData();
-  data.xp += amount;
-  const needed = xpForNextLevel(data.level);
-  if (data.xp >= needed) {
-    data.xp -= needed;
-    data.level++;
-  }
-  saveXPData(data);
-  updateXPUI();
-}
-function updateXPUI() {
-  const data = getXPData();
-  const needed = xpForNextLevel(data.level);
-  const pct = Math.min((data.xp / needed) * 100, 100);
-  levelNum.textContent = data.level;
-  xpText.textContent = `${data.xp} / ${needed} XP`;
-  levelProgress.style.width = pct + "%";
-}
-updateXPUI();
-
-/* ---------- REWARDS ---------- */
+/* REWARDS + XP */
 const rewardPools = {
-  Common: ["1 kiss","3 kisses","Hand squeeze","Compliment","Sit closer"],
-  Rare: ["Short handwritten note","Photo together","Extended cuddle"],
   Epic: ["Prepared note","Small gift","10-minute massage"],
   Legendary: ["Main Birthday Gift","Deep Handwritten Letter"]
+};
+
+const xpValues = {
+  Common: 10,
+  Rare: 25,
+  Epic: 60,
+  Legendary: 120
 };
 
 function rollOnce() {
@@ -304,14 +242,15 @@ function rollOnce() {
   return "Common";
 }
 
-function getReward(r) {
-  const pool = rewardPools[r];
-  return pool[Math.floor(Math.random() * pool.length)];
+function getReward(rarity) {
+  return rewardPools[rarity]
+    ? rewardPools[rarity][Math.floor(Math.random() * rewardPools[rarity].length)]
+    : null;
 }
 
-/* ---------- ROLL ---------- */
 updatePityUI();
 
+/* ROLL */
 rollBtn.onclick = async () => {
   isRolling = true;
   rollBtn.disabled = true;
@@ -322,6 +261,7 @@ rollBtn.onclick = async () => {
     await new Promise(r => setTimeout(r, 250));
 
     const rarity = rollOnce();
+    const xp = xpValues[rarity];
     const reward = getReward(rarity);
     const pity = getPity();
 
@@ -329,22 +269,21 @@ rollBtn.onclick = async () => {
     savePity(pity);
     updatePityUI();
 
-    // XP gain logic
-    const xpGain = rarity === "Legendary" ? 15 :
-                   rarity === "Epic" ? 7 :
-                   rarity === "Rare" ? 3 : 1;
-    addXP(xpGain);
-
     saveRoll({
       rollNumber: getRollLog().length + 1,
       rarity,
+      xp,
       prize: reward,
       timestamp: Date.now()
     });
 
     const card = document.createElement("div");
     card.className = `card ${rarity}`;
-    card.innerHTML = `<strong>${rarity}</strong><br>${reward}`;
+    card.innerHTML = `
+      <strong>${rarity}</strong><br>
+      +${xp} XP
+      ${reward ? `<br><em>${reward}</em>` : ""}
+    `;
     resultDiv.appendChild(card);
 
     if (rarity === "Legendary") {
@@ -366,7 +305,7 @@ ackLegendary.onclick = () => {
   app.classList.remove("locked");
 };
 
-/* ---------- HISTORY ---------- */
+/* HISTORY */
 historyBtn.onclick = () => {
   historyOverlay.style.display = "block";
   renderHistory();
@@ -374,6 +313,7 @@ historyBtn.onclick = () => {
 closeHistory.onclick = () => {
   historyOverlay.style.display = "none";
 };
+
 function renderHistory() {
   const log = getRollLog().slice().reverse();
   historyList.innerHTML = log.length ? "" : "<p>No rolls yet.</p>";
@@ -382,8 +322,9 @@ function renderHistory() {
     div.className = "card";
     div.innerHTML = `
       <strong>#${e.rollNumber}</strong> — ${e.rarity}<br>
-      ${e.prize}<br>
-      <span style="opacity:.6;font-size:.8rem">
+      +${e.xp} XP
+      ${e.prize ? `<br>${e.prize}` : ""}
+      <br><span style="opacity:.6;font-size:.8rem">
         ${new Date(e.timestamp).toLocaleString()}
       </span>`;
     historyList.appendChild(div);
