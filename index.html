@@ -42,48 +42,7 @@ body {
   pointer-events: none;
 }
 
-#result {
-  min-height: 120px;
-  max-height: 45vh;
-  overflow-y: auto;
-}
-
-.card {
-  margin: 6px 0;
-  padding: 12px;
-  border-radius: 14px;
-  background: #1a1d33;
-  animation: fadeIn 0.3s ease forwards;
-}
-
-.Common { border-left: 6px solid #b0b0b0; }
-.Rare { border-left: 6px solid #4da6ff; }
-.Epic { border-left: 6px solid #b066ff; }
-.Legendary { border-left: 6px solid gold; }
-
-button {
-  width: 100%;
-  padding: 14px;
-  font-size: 1.1rem;
-  border-radius: 14px;
-  border: none;
-  background: #4f46e5;
-  color: white;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-/* XP BAR */
+/* LEVEL BAR */
 #levelContainer {
   margin-bottom: 12px;
   text-align: left;
@@ -110,6 +69,36 @@ button:disabled {
   transition: width 0.4s ease;
 }
 
+#result {
+  min-height: 120px;
+  max-height: 45vh;
+  overflow-y: auto;
+}
+
+.card {
+  margin: 6px 0;
+  padding: 12px;
+  border-radius: 14px;
+  background: #1a1d33;
+}
+
+.Common { border-left: 6px solid #b0b0b0; }
+.Rare { border-left: 6px solid #4da6ff; }
+.Epic { border-left: 6px solid #b066ff; }
+.Legendary { border-left: 6px solid gold; }
+
+button {
+  width: 100%;
+  padding: 14px;
+  font-size: 1.1rem;
+  border-radius: 14px;
+  border: none;
+  background: #4f46e5;
+  color: white;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
 /* TITLE */
 #bannerSplash {
   display: flex;
@@ -121,17 +110,6 @@ button:disabled {
   justify-content: center;
   align-items: center;
   text-align: center;
-}
-
-/* HISTORY */
-#historyOverlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: #0f1220;
-  z-index: 3000;
-  padding: 20px;
-  overflow-y: auto;
 }
 
 /* LEGENDARY */
@@ -153,7 +131,7 @@ button:disabled {
 
 <div id="bannerSplash">
   <div>
-    <h1 style="font-size:2.8rem;">🎂 LIMITED BIRTHDAY BANNER 🎂</h1>
+    <h1 style="font-size:2.6rem;">🎂 LIMITED BIRTHDAY BANNER 🎂</h1>
     <button id="enterBanner">Enter Banner</button>
   </div>
 </div>
@@ -161,24 +139,15 @@ button:disabled {
 <div id="app">
   <h1>🎂 Limited Birthday Banner</h1>
 
-  <!-- LEVEL BAR -->
   <div id="levelContainer">
     <div id="levelText"></div>
     <div id="xpBar"><div id="xpFill"></div></div>
   </div>
 
   <div id="pityDisplay" style="opacity:.7;font-size:.85rem;"></div>
-
   <div id="result"></div>
 
   <button id="rollBtn">🎲 Roll 10</button>
-  <button id="historyBtn" style="background:#2a2e5a;">📜 History</button>
-</div>
-
-<div id="historyOverlay">
-  <button id="closeHistory">Close</button>
-  <h2>Roll History</h2>
-  <div id="historyList"></div>
 </div>
 
 <div id="legendaryOverlay">
@@ -192,11 +161,27 @@ button:disabled {
 <script>
 let isRolling = false;
 
-const PLAYER_KEY = "birthday_player";
-const STORAGE_KEY = "birthday_roll_log";
-const PITY_KEY = "birthday_pity";
+/* ---------- TITLE CONTROL ---------- */
+const bannerSplash = document.getElementById("bannerSplash");
+const app = document.getElementById("app");
+const enterBanner = document.getElementById("enterBanner");
 
-/* ---------- PLAYER ---------- */
+function showTitle() {
+  bannerSplash.style.display = "flex";
+  app.classList.add("locked");
+}
+
+function hideTitle() {
+  bannerSplash.style.display = "none";
+  app.classList.remove("locked");
+}
+
+showTitle();
+enterBanner.onclick = hideTitle;
+
+/* ---------- PLAYER / LEVEL ---------- */
+const PLAYER_KEY = "birthday_player";
+
 function getPlayer() {
   return JSON.parse(localStorage.getItem(PLAYER_KEY)) || { level: 1, xp: 0 };
 }
@@ -209,7 +194,6 @@ function xpToNext(level) {
 function gainXP(amount) {
   const p = getPlayer();
   p.xp += amount;
-
   while (p.xp >= xpToNext(p.level)) {
     p.xp -= xpToNext(p.level);
     p.level++;
@@ -220,13 +204,14 @@ function gainXP(amount) {
 function updateLevelUI() {
   const p = getPlayer();
   const needed = xpToNext(p.level);
-  const percent = Math.min(100, (p.xp / needed) * 100);
+  const percent = (p.xp / needed) * 100;
   document.getElementById("levelText").textContent =
     `Level ${p.level} — ${p.xp} / ${needed} XP`;
   document.getElementById("xpFill").style.width = percent + "%";
 }
 
 /* ---------- PITY ---------- */
+const PITY_KEY = "birthday_pity";
 function getPity() {
   return JSON.parse(localStorage.getItem(PITY_KEY)) || { legendary: 0 };
 }
@@ -256,8 +241,10 @@ function rollOnce() {
 }
 
 document.getElementById("rollBtn").onclick = async () => {
+  if (isRolling) return;
   isRolling = true;
   result.innerHTML = "";
+
   for (let i = 0; i < 10; i++) {
     await new Promise(r => setTimeout(r, 200));
     const rarity = rollOnce();
@@ -272,5 +259,6 @@ document.getElementById("rollBtn").onclick = async () => {
   isRolling = false;
 };
 </script>
+
 </body>
 </html>
