@@ -179,8 +179,10 @@ const legendaryOverlay = document.getElementById("legendaryOverlay");
 const legendaryPrize = document.getElementById("legendaryPrize");
 const ackLegendary = document.getElementById("ackLegendary");
 
+/* STORAGE KEYS */
 const STORAGE_KEY = "birthday_roll_log";
 const PITY_KEY = "birthday_pity";
+const XP_KEY = "birthday_total_xp";
 
 /* TITLE */
 function showTitle() {
@@ -213,6 +215,18 @@ function getPity() {
 function savePity(p) {
   localStorage.setItem(PITY_KEY, JSON.stringify(p));
 }
+
+/* XP STORAGE (STEP 1) */
+function getTotalXP() {
+  return JSON.parse(localStorage.getItem(XP_KEY)) || 0;
+}
+function addXP(amount) {
+  const currentXP = getTotalXP();
+  const newXP = currentXP + amount;
+  localStorage.setItem(XP_KEY, JSON.stringify(newXP));
+  return newXP;
+}
+
 function updatePityUI() {
   pityDisplay.textContent = `Legendary Pity: ${getPity().legendary} / 90`;
 }
