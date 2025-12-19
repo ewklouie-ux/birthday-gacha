@@ -32,34 +32,21 @@ body {
 }
 
 /* LEVEL BAR */
-#levelBox {
-  margin: 10px 0 16px;
-}
-
-#levelText {
-  font-weight: 600;
-  margin-bottom: 6px;
-}
-
+#levelBox { margin: 10px 0 16px; }
+#levelText { font-weight: 600; margin-bottom: 6px; }
 #xpBar {
   height: 10px;
   background: #1a1d33;
   border-radius: 999px;
   overflow: hidden;
 }
-
 #xpFill {
   height: 100%;
   width: 0%;
   background: linear-gradient(90deg, #a78bfa, #facc15);
   transition: width 0.4s ease;
 }
-
-#xpNumbers {
-  font-size: 0.75rem;
-  opacity: 0.7;
-  margin-top: 4px;
-}
+#xpNumbers { font-size: 0.75rem; opacity: 0.7; margin-top: 4px; }
 
 /* CARDS */
 .card {
@@ -68,7 +55,6 @@ body {
   border-radius: 14px;
   background: #1a1d33;
 }
-
 .Common { border-left: 6px solid #b0b0b0; }
 .Rare { border-left: 6px solid #4da6ff; }
 .Epic { border-left: 6px solid #b066ff; }
@@ -86,15 +72,8 @@ button {
   cursor: pointer;
   margin-top: 10px;
 }
-
-button.secondary {
-  background: #2a2e5a;
-}
-
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
+button.secondary { background: #2a2e5a; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* TITLE SCREEN */
 #bannerSplash {
@@ -139,7 +118,6 @@ button:disabled {
 
 <body>
 
-<!-- TITLE -->
 <div id="bannerSplash">
   <div id="bannerCard">
     <h1 style="font-size:2.4rem;">🎂 LIMITED BIRTHDAY BANNER 🎂</h1>
@@ -148,7 +126,6 @@ button:disabled {
   </div>
 </div>
 
-<!-- APP -->
 <div id="app">
   <h1>🎂 Limited Birthday Banner</h1>
 
@@ -167,7 +144,6 @@ button:disabled {
   <button id="titleBtn" class="secondary">🎂 Title Screen</button>
 </div>
 
-<!-- HISTORY -->
 <div id="historyOverlay">
   <button id="closeHistory" class="secondary">← Back</button>
   <h2>Roll History</h2>
@@ -176,6 +152,7 @@ button:disabled {
 
 <script>
 let isRolling = false;
+let bannerEntered = false;
 
 /* DOM */
 const app = document.getElementById("app");
@@ -190,28 +167,30 @@ const pityDisplay = document.getElementById("pityDisplay");
 const historyOverlay = document.getElementById("historyOverlay");
 const historyList = document.getElementById("historyList");
 
-/* LEVEL UI */
-const levelText = document.getElementById("levelText");
-const xpFill = document.getElementById("xpFill");
-const xpNumbers = document.getElementById("xpNumbers");
+/* TITLE STATE */
+function applyLockState() {
+  app.classList.toggle("locked", !bannerEntered);
+}
 
-/* STORAGE KEYS */
-const STORAGE_KEY = "birthday_roll_log";
-const PITY_KEY = "birthday_pity";
-const LEVEL_KEY = "birthday_level";
-
-/* TITLE */
 function showTitle() {
   bannerSplash.style.display = "flex";
-  app.classList.add("locked");
+  applyLockState();
 }
+
 function hideTitle() {
+  bannerEntered = true;
   bannerSplash.style.display = "none";
-  app.classList.remove("locked");
+  applyLockState();
 }
+
 showTitle();
 enterBanner.onclick = hideTitle;
 titleBtn.onclick = () => !isRolling && showTitle();
+
+/* STORAGE */
+const STORAGE_KEY = "birthday_roll_log";
+const PITY_KEY = "birthday_pity";
+const LEVEL_KEY = "birthday_level";
 
 /* DATA */
 function getPity() {
@@ -247,16 +226,14 @@ function getHistory() {
   return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
 }
 function saveHistory(entry) {
-  const history = getHistory();
-  history.unshift(entry);
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+  const h = getHistory();
+  h.unshift(entry);
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(h));
 }
 function renderHistory() {
-  const history = getHistory();
-  historyList.innerHTML = history.length
-    ? history.map(h =>
-        `<div class="card"><strong>${h.time}</strong><br>${h.results.join(", ")}</div>`
-      ).join("")
+  const h = getHistory();
+  historyList.innerHTML = h.length
+    ? h.map(e => `<div class="card"><strong>${e.time}</strong><br>${e.results.join(", ")}</div>`).join("")
     : "<p style='opacity:.6'>No rolls yet.</p>";
 }
 
@@ -285,13 +262,12 @@ rollBtn.onclick = async () => {
   rollBtn.disabled = historyBtn.disabled = titleBtn.disabled = true;
   resultDiv.innerHTML = "";
 
-  const rollResults = [];
+  const results = [];
 
   for (let i = 0; i < 10; i++) {
     await new Promise(r => setTimeout(r, 250));
-
     const rarity = rollOnce();
-    rollResults.push(rarity);
+    results.push(rarity);
 
     const xpGain = xpValues[rarity];
     const levelData = getLevelData();
@@ -318,10 +294,7 @@ rollBtn.onclick = async () => {
     if (rarity === "Legendary") break;
   }
 
-  saveHistory({
-    time: new Date().toLocaleString(),
-    results: rollResults
-  });
+  saveHistory({ time: new Date().toLocaleString(), results });
 
   rollBtn.disabled = historyBtn.disabled = titleBtn.disabled = false;
   isRolling = false;
