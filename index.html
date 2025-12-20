@@ -279,6 +279,18 @@ function getLevel(totalXP) {
   return Math.floor(totalXP / XP_PER_BAR) + 1;
 }
 
+/* PATCH 1: LEVEL CHANGE DETECTION (LOGIC ONLY) */
+let lastKnownLevel = null;
+
+function detectLevelUp(currentLevel) {
+  if (lastKnownLevel !== null && currentLevel > lastKnownLevel) {
+    lastKnownLevel = currentLevel;
+    return true;
+  }
+  lastKnownLevel = currentLevel;
+  return false;
+}
+
 function updateXPUI() {
   const totalXP = getTotalXP();
   const currentXP = totalXP % XP_PER_BAR;
@@ -288,6 +300,8 @@ function updateXPUI() {
   xpBar.style.width = `${percent}%`;
   xpText.textContent = `${currentXP} / ${XP_PER_BAR} XP`;
   levelText.textContent = `Level ${level}`;
+
+  detectLevelUp(level);
 }
 
 /* REWARDS + XP */
