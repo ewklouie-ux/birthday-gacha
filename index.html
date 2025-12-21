@@ -299,7 +299,47 @@ const closeHistory = document.getElementById("closeHistory");
 const legendaryOverlay = document.getElementById("legendaryOverlay");  
 const legendaryPrize = document.getElementById("legendaryPrize");  
 const ackLegendary = document.getElementById("ackLegendary");  
+  
+/* LEVEL MILESTONE REWARDS */
+const LEVEL_MILESTONES = {
+  5: "A short handwritten note 💌",
+  10: "A small surprise gift 🎁",
+  20: "A planned date experience 🌙",
+  30: "A meaningful gesture 💖",
+  50: "🎂 MAIN BIRTHDAY MOMENT 🎂",
+  100: "🌟 ULTIMATE LEGENDARY — THE FINAL SURPRISE 🌟"
+};
 
+const CLAIMED_MILESTONES_KEY = "birthday_claimed_milestones";
+
+function getClaimedMilestones() {
+  return JSON.parse(localStorage.getItem(CLAIMED_MILESTONES_KEY)) || [];
+}
+
+function markMilestoneClaimed(level) {
+  const claimed = getClaimedMilestones();
+  claimed.push(level);
+  localStorage.setItem(CLAIMED_MILESTONES_KEY, JSON.stringify(claimed));
+}
+
+function checkMilestoneReward(level) {
+  const reward = LEVEL_MILESTONES[level];
+  if (!reward) return;
+
+  const claimed = getClaimedMilestones();
+  if (claimed.includes(level)) return;
+
+  markMilestoneClaimed(level);
+  showMilestoneReward(level, reward);
+}
+
+function showMilestoneReward(level, rewardText) {
+  legendaryPrize.textContent = `Level ${level} Reward:\n${rewardText}`;
+  app.classList.add("locked");
+  legendaryOverlay.style.display = "flex";
+}
+
+  
 /* XP CURVE CONFIG */
 const BASE_XP = 120;
 const GROWTH_XP = 55;
@@ -379,9 +419,10 @@ let lastKnownLevel = null;
 function detectLevelUp(currentLevel) {  
   if (lastKnownLevel !== null && currentLevel > lastKnownLevel) {
     showLevelUp(currentLevel);
-    lastKnownLevel = currentLevel;  
-    return true;  
-  }  
+    checkMilestoneReward(currentLevel);
+    lastKnownLevel = currentLevel;
+    return true;
+  }
   lastKnownLevel = currentLevel;  
   return false;  
 }  
