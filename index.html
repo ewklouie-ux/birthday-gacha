@@ -239,7 +239,7 @@ button:disabled {
   transform: translateX(-50%);
   
   /* MOBILE-FRIENDLY WIDTH */
-  width: calc(80% - 32px);
+  width: calc(86% - 32px);
   max-width: 420px;
 
   padding: 12px 16px;
@@ -391,11 +391,15 @@ function showTitleUnlocked(titleName) {
 }
   
 function showDailyRewardPopup(streak, xp) {
+  bannerSplash.style.display = "none"; // 🔒 force hide title
+  app.classList.add("locked");
+
   dailyRewardText.innerHTML = `
-    Login Streak: <strong>${streak} day${streak > 1 ? "s" : ""}</strong><br>
+    <strong>Login Streak:</strong> ${streak} day${streak > 1 ? "s" : ""}<br><br>
+    🎉 <strong>Reward:</strong><br>
     +${xp} XP
   `;
-  app.classList.add("locked");
+
   dailyOverlay.style.display = "flex";
 }
 
@@ -544,15 +548,28 @@ function checkDailyLogin() {
 
 function grantDailyReward(streak) {
   let xpReward = 50;
+  let bonusText = "";
 
-  if (streak >= 7) xpReward = 300;
-  else if (streak >= 3) xpReward = 150;
+  if (streak >= 7) {
+    xpReward = 300;
+    bonusText = "🔥 Weekly Bonus!";
+  } else if (streak >= 3) {
+    xpReward = 150;
+    bonusText = "✨ Streak Bonus!";
+  }
 
   addXP(xpReward);
   updateXPUI();
-  checkDailyLogin();
+
+  dailyRewardText.innerHTML = `
+    <strong>Login Streak:</strong> ${streak} day${streak > 1 ? "s" : ""}<br><br>
+    🎁 +${xpReward} XP<br>
+    ${bonusText ? `<em>${bonusText}</em>` : ""}
+  `;
+
   showDailyRewardPopup(streak, xpReward);
 }
+
 
   
 /* PATCH 1: LEVEL CHANGE DETECTION (LOGIC ONLY) */  
@@ -622,17 +639,25 @@ const xpValues = {
   Legendary: 120  
 };  
   
-function rollOnce() {  
-  const pity = getPity();  
-  const chance = 1 + pity.legendary * 0.5;  
-  if (pity.legendary >= 90) return "Legendary";  
-  
-  const n = Math.random() * 100;  
-  if (n < chance) return "Legendary";  
-  if (n < chance + 9) return "Epic";  
-  if (n < chance + 29) return "Rare";  
-  return "Common";  
-}  
+function rollOnce() {
+  const pity = getPity().legendary;
+
+  // Hard guarantee
+  if (pity >= 90) return "Legendary";
+
+  let legendaryChance = 0.6; // base %
+
+  if (pity >= 60) legendaryChance += (pity - 60) * 0.4;   // slow ramp
+  if (pity >= 80) legendaryChance += (pity - 80) * 1.8;   // sharp ramp
+
+  const roll = Math.random() * 100;
+
+  if (roll < legendaryChance) return "Legendary";
+  if (roll < legendaryChance + 9) return "Epic";
+  if (roll < legendaryChance + 29) return "Rare";
+  return "Common";
+}
+
   
 function getReward(rarity) {  
   return rewardPools[rarity]  
