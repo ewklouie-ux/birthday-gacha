@@ -30,6 +30,14 @@ body {
   text-align: center;  
   transition: opacity 0.4s ease, filter 0.4s ease;  
 }  
+
+#titleDisplay {
+  margin-top: 6px;
+  margin-bottom: 8px;
+  font-size: 0.9rem;
+  opacity: 0.85;
+  text-align: center;
+}
   
 .locked {  
   opacity: 0.12;  
@@ -252,11 +260,14 @@ button:disabled {
 </div>  
   <div id="levelUpBanner">✨ LEVEL UP — Level 1 ✨</div>
   <div id="app">  
-  <h1>🎂 Limited Birthday Banner</h1>  
-  <p>Tap to Roll ×10</p>    <div id="xpMeta">  
+    <h1>🎂 Limited Birthday Banner</h1>  
+    <div id="titleDisplay"></div>
+    <p>Tap to Roll ×10</p>    <div id="xpMeta">  
     <span id="levelText">Level 1</span>  
     <span id="xpText">0 / 1000 XP</span>  
-  </div>    <div id="xpContainer">  
+  </div>
+  
+  <div id="xpContainer">  
     <div id="xpBar"></div>  
   </div>    <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>  
   <div id="result"></div>  
@@ -269,7 +280,7 @@ button:disabled {
   <div id="historyList"></div>  
 </div>  
 
-<div id="titleDisplay" style="opacity:.8;font-size:.85rem;"></div>
+
 
 <div id="dailyOverlay" style="display:none;position:fixed;inset:0;
   background:rgba(0,0,0,.85);z-index:4600;
