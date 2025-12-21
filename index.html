@@ -223,7 +223,7 @@ button:disabled {
   opacity: 0.85;
 }
 
-</style> /* end of CSS */
+</style> 
 
 </head>  <body>  <div id="bannerSplash">  
   <div>  
@@ -343,6 +343,15 @@ function detectLevelUp(currentLevel) {
   lastKnownLevel = currentLevel;  
   return false;  
 }  
+
+function triggerLevelUpFX() {
+  xpBar.classList.add("level-up");
+
+  setTimeout(() => {
+    xpBar.classList.remove("level-up");
+  }, 900);
+}
+   
   
 function updateXPUI() {  
   const totalXP = getTotalXP();  
@@ -354,7 +363,10 @@ function updateXPUI() {
   xpText.textContent = `${currentXP} / ${XP_PER_BAR} XP`;  
   levelText.textContent = `Level ${level}`;  
   
-  detectLevelUp(level);  
+  if (detectLevelUp(level)) {
+    triggerLevelUpFX();
+  }
+
 }  
   
 /* REWARDS + XP */  
@@ -478,5 +490,6 @@ function renderHistory() {
     historyList.appendChild(div);  
   }  
 }  
-</script>  </body>  
+</script> 
+</body>  
 </html>
