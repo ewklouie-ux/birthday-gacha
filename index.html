@@ -360,9 +360,18 @@ function addXP(amount) {
 }  
   
 /* XP + LEVEL */  
-function getLevel(totalXP) {  
-  return Math.floor(totalXP / XP_PER_BAR) + 1;  
-}  
+function getLevelFromXP(totalXP) {
+  let level = 1;
+  let xpRemaining = totalXP;
+
+  while (xpRemaining >= xpForLevel(level)) {
+    xpRemaining -= xpForLevel(level);
+    level++;
+  }
+
+  return { level, xpIntoLevel: xpRemaining };
+}
+
   
 /* PATCH 1: LEVEL CHANGE DETECTION (LOGIC ONLY) */  
 let lastKnownLevel = null;  
