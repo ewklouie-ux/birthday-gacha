@@ -407,21 +407,22 @@ function triggerLevelUpFX() {
 }
    
   
-function updateXPUI() {  
-  const totalXP = getTotalXP();  
-  const currentXP = totalXP % XP_PER_BAR;  
-  const percent = (currentXP / XP_PER_BAR) * 100;  
-  const level = getLevelfromXP(totalXP);  
-  
-  xpBar.style.width = `${percent}%`;  
-  xpText.textContent = `${currentXP} / ${XP_PER_BAR} XP`;  
-  levelText.textContent = `Level ${level}`;  
-  
+function updateXPUI() {
+  const totalXP = getTotalXP();
+  const { level, xpIntoLevel } = getLevelFromXP(totalXP);
+  const needed = xpForLevel(level);
+
+  const percent = (xpIntoLevel / needed) * 100;
+
+  xpBar.style.width = `${percent}%`;
+  xpText.textContent = `${xpIntoLevel} / ${needed} XP`;
+  levelText.textContent = `Level ${level}`;
+
   if (detectLevelUp(level)) {
     triggerLevelUpFX();
   }
+}
 
-}  
   
 /* REWARDS + XP */  
 const rewardPools = {  
