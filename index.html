@@ -269,6 +269,8 @@ button:disabled {
   <div id="historyList"></div>  
 </div>  
 
+<div id="titleDisplay" style="opacity:.8;font-size:.85rem;"></div>
+
 <div id="dailyOverlay" style="display:none;position:fixed;inset:0;
   background:rgba(0,0,0,.85);z-index:4600;
   display:flex;justify-content:center;align-items:center;text-align:center;">
@@ -317,7 +319,57 @@ const LOGIN_STREAK_KEY = "birthday_login_streak";
 
 const dailyOverlay = document.getElementById("dailyOverlay");
 const dailyRewardText = document.getElementById("dailyRewardText");
+const titleDisplay = document.getElementById("titleDisplay");
 
+function updateTitleUI() {
+  const unlocked = getUnlockedTitles();
+  const last = unlocked[unlocked.length - 1];
+  const title = TITLES.find(t => t.id === last);
+  titleDisplay.textContent = title ? title.name : "";
+}
+
+const TITLES = [
+  { id: "starter", name: "🎂 Birthday Guest", condition: () => true },
+  { id: "roller", name: "🎲 Dedicated Roller", condition: () => getRollLog().length >= 50 },
+  { id: "legend", name: "🌟 Chosen One", condition: () =>
+      getRollLog().some(r => r.rarity === "Legendary")
+  },
+  { id: "level20", name: "💖 Devoted", condition: () =>
+      getLevelFromXP(getTotalXP()).level >= 20
+  }
+];
+
+const TITLE_KEY = "birthday_titles_unlocked";
+function getUnlockedTitles() {
+  return JSON.parse(localStorage.getItem(TITLE_KEY)) || [];
+}
+
+function checkTitles() {
+  const unlocked = getUnlockedTitles();
+  let updated = false;
+
+  for (const t of TITLES) {
+    if (!unlocked.includes(t.id) && t.condition()) {
+      unlocked.push(t.id);
+      updated = true;
+      showTitleUnlocked(t.name);
+    }
+  }
+
+  if (updated) {
+    localStorage.setItem(TITLE_KEY, JSON.stringify(unlocked));
+  }
+}
+  
+function showTitleUnlocked(titleName) {
+  const div = document.createElement("div");
+  div.className = "xp-float xp-epic";
+  div.textContent = `New Title Unlocked: ${titleName}`;
+  document.body.appendChild(div);
+
+  setTimeout(() => div.remove(), 1200);
+}
+  
 function showDailyRewardPopup(streak, xp) {
   dailyRewardText.innerHTML = `
     Login Streak: <strong>${streak} day${streak > 1 ? "s" : ""}</strong><br>
@@ -533,6 +585,8 @@ function updateXPUI() {
     triggerLevelUpFX();
   }
 }
+checkTitles();
+updateTitleUI();
 
   
 /* REWARDS + XP */  
@@ -602,7 +656,10 @@ rollBtn.onclick = async () => {
       prize: reward,  
       timestamp: Date.now()  
     });  
-  
+
+    checkTitles();
+    updateTitleUI();
+
     const card = document.createElement("div");  
     card.className = `card ${rarity}`;  
     card.innerHTML = `  
