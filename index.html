@@ -299,7 +299,19 @@ const closeHistory = document.getElementById("closeHistory");
 const legendaryOverlay = document.getElementById("legendaryOverlay");  
 const legendaryPrize = document.getElementById("legendaryPrize");  
 const ackLegendary = document.getElementById("ackLegendary");  
-  
+
+/* XP CURVE CONFIG */
+const BASE_XP = 120;
+const GROWTH_XP = 55;
+const MAX_XP = 1200;
+
+function xpForLevel(level) {
+  return Math.min(
+    BASE_XP + (level - 1) * GROWTH_XP,
+    MAX_XP
+  );
+}
+
 /* STORAGE KEYS */  
 const STORAGE_KEY = "birthday_roll_log";  
 const PITY_KEY = "birthday_pity";  
