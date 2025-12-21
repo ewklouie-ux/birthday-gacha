@@ -267,7 +267,19 @@ button:disabled {
   <button id="closeHistory">Close</button>  
   <h2>Roll History</h2>  
   <div id="historyList"></div>  
-</div>  <div id="legendaryOverlay">  
+</div>  
+
+<div id="dailyOverlay" style="display:none;position:fixed;inset:0;
+  background:rgba(0,0,0,.85);z-index:4600;
+  display:flex;justify-content:center;align-items:center;text-align:center;">
+    <div>
+      <h2>🎁 Daily Login Reward</h2>
+      <p id="dailyRewardText"></p>
+      <button onclick="closeDailyOverlay()">Claim</button>
+    </div>
+</div>
+
+<div id="legendaryOverlay">  
   <div>  
     <h1>🌟 LEGENDARY 🌟</h1>  
     <p id="legendaryPrize"></p>  
@@ -299,6 +311,26 @@ const closeHistory = document.getElementById("closeHistory");
 const legendaryOverlay = document.getElementById("legendaryOverlay");  
 const legendaryPrize = document.getElementById("legendaryPrize");  
 const ackLegendary = document.getElementById("ackLegendary");  
+
+const LOGIN_KEY = "birthday_last_login";
+const LOGIN_STREAK_KEY = "birthday_login_streak";
+
+const dailyOverlay = document.getElementById("dailyOverlay");
+const dailyRewardText = document.getElementById("dailyRewardText");
+
+function showDailyRewardPopup(streak, xp) {
+  dailyRewardText.innerHTML = `
+    Login Streak: <strong>${streak} day${streak > 1 ? "s" : ""}</strong><br>
+    +${xp} XP
+  `;
+  app.classList.add("locked");
+  dailyOverlay.style.display = "flex";
+}
+
+function closeDailyOverlay() {
+  dailyOverlay.style.display = "none";
+  app.classList.remove("locked");
+}
   
 /* LEVEL MILESTONE REWARDS */
 const LEVEL_MILESTONES = {
@@ -410,6 +442,44 @@ function getLevelFromXP(totalXP) {
   }
 
   return { level, xpIntoLevel: xpRemaining };
+}
+
+function getTodayString() {
+  return new Date().toISOString().split("T")[0];
+}
+
+function checkDailyLogin() {
+  const today = getTodayString();
+  const lastLogin = localStorage.getItem(LOGIN_KEY);
+  let streak = JSON.parse(localStorage.getItem(LOGIN_STREAK_KEY)) || 0;
+
+  if (lastLogin === today) return;
+
+  if (lastLogin) {
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yStr = yesterday.toISOString().split("T")[0];
+    streak = lastLogin === yStr ? streak + 1 : 1;
+  } else {
+    streak = 1;
+  }
+
+  localStorage.setItem(LOGIN_KEY, today);
+  localStorage.setItem(LOGIN_STREAK_KEY, JSON.stringify(streak));
+
+  grantDailyReward(streak);
+}
+
+function grantDailyReward(streak) {
+  let xpReward = 50;
+
+  if (streak >= 7) xpReward = 300;
+  else if (streak >= 3) xpReward = 150;
+
+  addXP(xpReward);
+  updateXPUI();
+  checkDailyLogin();
+  showDailyRewardPopup(streak, xpReward);
 }
 
   
