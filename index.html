@@ -7,7 +7,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">  <link rel="manifest" href="/birthday-gacha/site.webmanifest">  
 <link rel="icon" type="image/png" sizes="192x192" href="/birthday-gacha/icons/android-chrome-192x192.png">  
 <link rel="icon" type="image/png" sizes="512x512" href="/birthday-gacha/icons/android-chrome-512x512.png">  
-<link rel="apple-touch-icon" href="/birthday-gacha/icons/apple-touch-icon.png">  <title>Birthday Limited Banner</title>  <style>  
+<link rel="apple-touch-icon" href="/birthday-gacha/icons/apple-touch-icon.png">  
+  
+<title>Birthday Limited Banner</title>  
+
+<style>  
 body {  
   margin: 0;  
   background: radial-gradient(circle at top, #111433, #0b0d1a);  
@@ -144,7 +148,84 @@ button:disabled {
   align-items: center;  
   text-align: center;  
 }  
-</style>  </head>  <body>  <div id="bannerSplash">  
+/* ============================
+   PHASE 4A — XP FEEDBACK VISUALS
+   (CSS ONLY, SAFE)
+============================ */
+
+/* Floating XP gain text */
+.xp-float {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  font-weight: 700;
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  animation: xpFloatUp 1.1s ease-out forwards;
+  text-shadow: 0 0 8px rgba(255,255,255,0.25);
+  z-index: 2000;
+}
+
+.xp-common { color: #b0b0b0; }
+.xp-rare { color: #4da6ff; }
+.xp-epic { color: #b066ff; }
+.xp-legendary { color: gold; }
+
+/* XP float animation */
+@keyframes xpFloatUp {
+  0% {
+    transform: translate(-50%, 8px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 1;
+  }
+  100% {
+    transform: translate(-50%, -26px);
+    opacity: 0;
+  }
+}
+
+/* Level Up Overlay */
+#levelUpOverlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 4500;
+  background: radial-gradient(
+    circle at center,
+    rgba(168,85,247,0.35),
+    rgba(0,0,0,0.85)
+  );
+  backdrop-filter: blur(6px);
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+#levelUpOverlay h1 {
+  font-size: 2.4rem;
+  margin-bottom: 8px;
+  background: linear-gradient(
+    90deg,
+    #38bdf8,
+    #6366f1,
+    #a855f7,
+    #ec4899
+  );
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+#levelUpOverlay p {
+  font-size: 1rem;
+  opacity: 0.85;
+}
+
+</style> /* end of CSS */
+
+</head>  <body>  <div id="bannerSplash">  
   <div>  
     <h1 style="font-size:2.8rem;">🎂 LIMITED BIRTHDAY BANNER 🎂</h1>  
     <p style="opacity:.85;margin:16px 0;">Available for a limited time only</p>  
