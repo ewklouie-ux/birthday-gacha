@@ -223,6 +223,24 @@ button:disabled {
   opacity: 0.85;
 }
 
+/* LEVEL UP BANNER */
+#levelUpBanner {
+  position: fixed;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #facc15, #f472b6, #a855f7);
+  color: #0b0d1a;
+  font-weight: 700;
+  font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 4500;
+  transition: opacity 0.4s ease;
+}
+
 </style> 
 
 </head>  <body>  <div id="bannerSplash">  
@@ -231,7 +249,9 @@ button:disabled {
     <p style="opacity:.85;margin:16px 0;">Available for a limited time only</p>  
     <button id="enterBanner" style="max-width:260px;">Enter Banner</button>  
   </div>  
-</div>  <div id="app">  
+</div>  
+  <div id="levelUpBanner">✨ LEVEL UP — Level 1 ✨</div>
+  <div id="app">  
   <h1>🎂 Limited Birthday Banner</h1>  
   <p>Tap to Roll ×10</p>    <div id="xpMeta">  
     <span id="levelText">Level 1</span>  
@@ -336,7 +356,8 @@ function getLevel(totalXP) {
 let lastKnownLevel = null;  
   
 function detectLevelUp(currentLevel) {  
-  if (lastKnownLevel !== null && currentLevel > lastKnownLevel) {  
+  if (lastKnownLevel !== null && currentLevel > lastKnownLevel) {
+    showLevelUp(currentLevel);
     lastKnownLevel = currentLevel;  
     return true;  
   }  
@@ -344,6 +365,18 @@ function detectLevelUp(currentLevel) {
   return false;  
 }  
 
+function showLevelUp(level) {
+  if (legendaryOverlay.style.display === "flex") return;
+
+  const banner = document.getElementById("levelUpBanner");
+  banner.textContent = `✨ LEVEL UP — Level ${level} ✨`;
+  banner.style.opacity = "1";
+
+  setTimeout(() => {
+    banner.style.opacity = "0";
+  }, 1200);
+}  
+  
 function triggerLevelUpFX() {
   xpBar.classList.add("level-up");
 
