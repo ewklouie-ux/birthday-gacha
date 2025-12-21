@@ -411,7 +411,7 @@ function updateXPUI() {
   const totalXP = getTotalXP();  
   const currentXP = totalXP % XP_PER_BAR;  
   const percent = (currentXP / XP_PER_BAR) * 100;  
-  const level = getLevel(totalXP);  
+  const level = getLevelfromXP(totalXP);  
   
   xpBar.style.width = `${percent}%`;  
   xpText.textContent = `${currentXP} / ${XP_PER_BAR} XP`;  
