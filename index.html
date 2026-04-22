@@ -449,9 +449,9 @@ function showMilestoneReward(level, rewardText) {
 
   
 /* XP CURVE CONFIG */
-const BASE_XP = 120;
-const GROWTH_XP = 55;
-const MAX_XP = 1200;
+const BASE_XP = 100;
+const GROWTH_XP = 40;
+const MAX_XP = 900;
 
 function xpForLevel(level) {
   return Math.min(
@@ -550,15 +550,6 @@ function checkDailyLogin() {
 function grantDailyReward(streak) {
   let xpReward = 50;
   let bonusText = "Thanks for coming back 💖";
-
-  if (streak >= 7) {
-    xpReward = 300;
-    bonusText = "🔥 7-Day Streak — Massive Bonus!";
-  } else if (streak >= 3) {
-    xpReward = 150;
-    bonusText = "✨ Streak Bonus Unlocked!";
-  }
-
 
   if (streak >= 7) {
     xpReward = 300;
