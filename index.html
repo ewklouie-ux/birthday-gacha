@@ -257,17 +257,6 @@ button:disabled {
   transition: opacity 0.4s ease;
 }
 
-#rollAnimation {
-  min-height: 60px;
-  font-size: 1.5rem;
-  font-weight: bold;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  opacity: 0;
-  transition: opacity .3s ease;
-}
-
 .rollShake {
   animation: shake .25s infinite;
 }
@@ -741,15 +730,6 @@ function showRollAnimation(rarity) {
 
 }
 
-  rollAnimation.innerHTML =
-    `${symbols[rarity]} ${rarity} ${symbols[rarity]}`;
-
-  rollAnimation.style.opacity = "1";
-
-  setTimeout(() => {
-    rollAnimation.style.opacity = "0";
-  },1000);
-}
 
 function updateRollTimerUI() {
 
