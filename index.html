@@ -697,7 +697,17 @@ checkDailyLogin();
 
   
 /* ROLL */  
-rollBtn.onclick = async () => {  
+rollBtn.onclick = async () => {
+  const rollData = getRollData();
+
+  if (rollData.available < 10) {
+    alert("Not enough rolls!");
+    return;
+  }
+
+  rollData.available -= 10;
+  saveRollData(rollData);
+  updateRollUI();
   isRolling = true;  
   rollBtn.disabled = true;  
   titleBtn.disabled = true;  
