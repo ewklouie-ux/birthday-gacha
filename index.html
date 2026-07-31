@@ -562,6 +562,13 @@ function generateRolls() {
   }
 }
 
+function startRollGenerationTimer() {
+  setInterval(() => {
+    generateRolls();
+    updateRollUI();
+  }, 1000);
+}
+  
 /* XP STORAGE */  
 function getTotalXP() {  
   return JSON.parse(localStorage.getItem(XP_KEY)) || 0;  
@@ -744,6 +751,7 @@ function updateRollUI() {
   
 initializeEvent();
 generateRolls();
+startRollGenerationTimer();
 
 updatePityUI();
 updateRollUI();
