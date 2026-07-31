@@ -342,6 +342,9 @@ const dailyOverlay = document.getElementById("dailyOverlay");
 const dailyRewardText = document.getElementById("dailyRewardText");
 const titleDisplay = document.getElementById("titleDisplay");
 
+const EVENT_START = new Date("2026-08-01T00:00:00");
+const EVENT_END = new Date("2026-08-03T23:59:59");
+  
 function updateTitleUI() {
   const unlocked = getUnlockedTitles();
   const last = unlocked[unlocked.length - 1];
@@ -365,6 +368,11 @@ function getUnlockedTitles() {
   return JSON.parse(localStorage.getItem(TITLE_KEY)) || [];
 }
 
+function isEventActive() {
+  const now = new Date();
+  return now >= EVENT_START && now <= EVENT_END;
+}
+  
 function checkTitles() {
   const unlocked = getUnlockedTitles();
   let updated = false;
@@ -763,6 +771,10 @@ checkDailyLogin();
 rollBtn.onclick = async () => {
   const rollData = getRollData();
 
+  if (!isEventActive()) {
+    alert("The birthday banner is not active yet!");
+    return;
+  }
   if (rollData.available < 10) {
     alert("Not enough rolls!");
     return;
