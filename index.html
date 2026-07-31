@@ -273,10 +273,15 @@ button:disabled {
     <span id="levelText">Level 1</span>  
     <span id="xpText">0 / 1000 XP</span>  
   </div>
-  <div
+<div
     id="rollDisplay"
     style="opacity:.8;font-size:.9rem;margin-bottom:6px;">
-  </div>
+</div>
+
+<div
+    id="rollTimerDisplay"
+    style="opacity:.6;font-size:.85rem;margin-bottom:6px;">
+</div>
   <div id="xpContainer">  
     <div id="xpBar"></div>  
   </div>    <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>  
@@ -341,8 +346,9 @@ const LOGIN_STREAK_KEY = "birthday_login_streak";
 const dailyOverlay = document.getElementById("dailyOverlay");
 const dailyRewardText = document.getElementById("dailyRewardText");
 const titleDisplay = document.getElementById("titleDisplay");
+const rollTimerDisplay = document.getElementById("rollTimerDisplay");
 
-const EVENT_START = new Date("2026-08-01T00:00:00");
+const EVENT_START = new Date("2026-07-01T00:00:00");
 const EVENT_END = new Date("2026-08-03T23:59:59");
   
 function updateTitleUI() {
@@ -570,10 +576,41 @@ function generateRolls() {
   }
 }
 
+function updateRollTimerUI() {
+
+  const rolls = getRollData();
+
+  if (rolls.available >= rolls.max) {
+    rollTimerDisplay.textContent = "Rolls fully charged!";
+    return;
+  }
+
+  const interval =
+    EVENT_CONFIG.intervalHours * 60 * 60 * 1000;
+
+  const elapsed = Date.now() - rolls.lastGenerated;
+
+  const remaining = interval - (elapsed % interval);
+
+  const seconds = Math.floor(remaining / 1000);
+
+  const minutes = Math.floor(seconds / 60);
+  const hours = Math.floor(minutes / 60);
+
+  rollTimerDisplay.textContent =
+    `Next +${EVENT_CONFIG.rollsPerInterval} rolls in: `
+    + `${String(hours).padStart(2,"0")}:`
+    + `${String(minutes % 60).padStart(2,"0")}:`
+    + `${String(seconds % 60).padStart(2,"0")}`;
+}  
+  
 function startRollGenerationTimer() {
   setInterval(() => {
+
     generateRolls();
     updateRollUI();
+    updateRollTimerUI();
+
   }, 1000);
 }
   
@@ -763,6 +800,7 @@ startRollGenerationTimer();
 
 updatePityUI();
 updateRollUI();
+updateRollTimerUI();
 updateXPUI();
 checkDailyLogin();
 
