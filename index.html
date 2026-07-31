@@ -483,7 +483,7 @@ const ROLLS_KEY = "birthday_available_rolls";
 const EVENT_CONFIG = {
   startRolls: 30,
   rollsPerInterval: 10,
-  intervalHours: 0.001,
+  intervalHours: 0.005,
   maxRolls: 150
 };
 
@@ -745,17 +745,28 @@ updateTitleUI();
 
   
 /* REWARDS + XP */  
-const rewardPools = {  
-  Epic: ["Prepared note","Small gift","10-minute massage"],  
-  Legendary: ["Main Birthday Gift","Deep Handwritten Letter"]  
-};  
+const rewardPools = {
+
+  Epic: [
+    "Prepared note",
+    "Small gift",
+    "Matcha latte",
+    "10-minute massage"
+  ],
+
+  Legendary: [
+    "Main Birthday Gift 🎁",
+    "Deep Handwritten Letter 💌"
+  ]
+
+};
   
 const xpValues = {  
-  Common: 10,  
-  Rare: 25,  
-  Epic: 60,  
-  Legendary: 120  
-};  
+  Common: 10,
+  Rare: 35,
+  Epic: 120,
+  Legendary: 500
+};
   
 function rollOnce() {
   const pity = getPity().legendary;
@@ -771,8 +782,8 @@ function rollOnce() {
   const roll = Math.random() * 100;
 
   if (roll < legendaryChance) return "Legendary";
-  if (roll < legendaryChance + 9) return "Epic";
-  if (roll < legendaryChance + 29) return "Rare";
+  if (roll < legendaryChance + 8) return "Epic";
+  if (roll < legendaryChance + 25) return "Rare";
   return "Common";
 }
 
