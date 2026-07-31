@@ -292,6 +292,74 @@ button:disabled {
     transform:scale(1);
   }
 }
+#rollAnimation {
+  min-height: 100px;
+  font-size: 2rem;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+
+.summonGlow {
+  animation: glowPulse 0.8s infinite alternate;
+}
+
+
+@keyframes glowPulse {
+  from {
+    filter: brightness(1);
+    transform: scale(1);
+  }
+
+  to {
+    filter: brightness(2);
+    transform: scale(1.15);
+  }
+}
+
+
+.legendaryFlash {
+  animation: legendaryFlash 1s ease;
+}
+
+
+@keyframes legendaryFlash {
+
+  0% {
+    background: transparent;
+  }
+
+  50% {
+    background:
+    radial-gradient(circle,
+    rgba(255,215,0,.6),
+    transparent);
+  }
+
+  100% {
+    background: transparent;
+  }
+
+}
+  .screenShake {
+ animation: screenShake .4s;
+}
+
+
+@keyframes screenShake {
+
+0% {transform:translateX(0);}
+20% {transform:translateX(-10px);}
+40% {transform:translateX(10px);}
+60% {transform:translateX(-8px);}
+80% {transform:translateX(8px);}
+100% {transform:translateX(0);}
+
+}
 </style> 
 
 </head>  <body>  <div id="bannerSplash">  
@@ -321,8 +389,9 @@ button:disabled {
   <div id="xpContainer">  
     <div id="xpBar"></div>  
   </div>    <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>  
-  <div id="rollAnimation">
-  </div>
+<div id="rollAnimation">
+  <div id="rollText"></div>
+</div>
 
   <div id="result"></div> 
   <button id="rollBtn">🎲 Roll 10</button>  
@@ -618,14 +687,59 @@ function generateRolls() {
 
 function showRollAnimation(rarity) {
 
-  rollAnimation.className = "rollReveal";
-
   const symbols = {
     Common:"⚪",
     Rare:"🔵",
     Epic:"🟣",
-    Legendary:"🌟"
+    Legendary:"🌟",
+    Unknown:"✨"
   };
+
+
+  rollAnimation.innerHTML =
+    `${symbols[rarity]} ${rarity} ${symbols[rarity]}`;
+
+
+  rollAnimation.style.opacity = "1";
+
+
+  if(rarity === "Unknown"){
+    rollAnimation.className =
+    "rollShake summonGlow";
+  }
+
+  else if(rarity === "Legendary"){
+
+    rollAnimation.className =
+    "legendaryFlash";
+
+    document.body.classList.add(
+      "legendaryFlash"
+    );
+
+    setTimeout(()=>{
+      document.body.classList.remove(
+        "legendaryFlash"
+      );
+    },1000);
+
+  }
+
+  else{
+
+    rollAnimation.className =
+    "rollReveal";
+
+  }
+
+
+  setTimeout(()=>{
+
+    rollAnimation.style.opacity="0";
+
+  },1500);
+
+}
 
   rollAnimation.innerHTML =
     `${symbols[rarity]} ${rarity} ${symbols[rarity]}`;
@@ -916,11 +1030,18 @@ rollBtn.onclick = async () => {
   
     const rarity = rollOnce();
 
-    showRollAnimation("???");
-
-    await new Promise(r => setTimeout(r, 700));
-
+    showRollAnimation("Unknown");
+    
+    await new Promise(r => setTimeout(r, 1200));
+    
     showRollAnimation(rarity);
+    
+    if(rarity === "Legendary"){
+        await new Promise(r => setTimeout(r, 2500));
+    }
+    else{
+        await new Promise(r => setTimeout(r, 900));
+    }
     const xp = xpValues[rarity];  
     const reward = getReward(rarity);  
     const pity = getPity();  
@@ -953,6 +1074,10 @@ rollBtn.onclick = async () => {
     resultDiv.appendChild(card);  
   
     if (rarity === "Legendary") {  
+      document.body.classList.add("screenShake");
+      setTimeout(()=>{
+       document.body.classList.remove("screenShake");
+      },400);
       hideTitle();  
       legendaryPrize.textContent = reward;  
       app.classList.add("locked");  
