@@ -256,6 +256,42 @@ button:disabled {
   z-index: 4500;
   transition: opacity 0.4s ease;
 }
+
+#rollAnimation {
+  min-height: 60px;
+  font-size: 1.5rem;
+  font-weight: bold;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  opacity: 0;
+  transition: opacity .3s ease;
+}
+
+.rollShake {
+  animation: shake .25s infinite;
+}
+
+@keyframes shake {
+  0% { transform: translateX(-4px); }
+  50% { transform: translateX(4px); }
+  100% { transform: translateX(-4px); }
+}
+
+.rollReveal {
+  animation: reveal .5s ease;
+}
+
+@keyframes reveal {
+  from {
+    opacity:0;
+    transform:scale(.5);
+  }
+  to {
+    opacity:1;
+    transform:scale(1);
+  }
+}
 </style> 
 
 </head>  <body>  <div id="bannerSplash">  
@@ -285,7 +321,10 @@ button:disabled {
   <div id="xpContainer">  
     <div id="xpBar"></div>  
   </div>    <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>  
-  <div id="result"></div>  
+  <div id="rollAnimation">
+  </div>
+
+  <div id="result"></div> 
   <button id="rollBtn">🎲 Roll 10</button>  
   <button id="historyBtn">📜 History</button>  
   <button id="titleBtn">🎂 Title Screen</button>  
@@ -324,7 +363,8 @@ const bannerSplash = document.getElementById("bannerSplash");
 const enterBanner = document.getElementById("enterBanner");  
 const titleBtn = document.getElementById("titleBtn");  
 const rollBtn = document.getElementById("rollBtn");  
-const resultDiv = document.getElementById("result");  
+const resultDiv = document.getElementById("result"); 
+const rollAnimation = document.getElementById("rollAnimation");
 const pityDisplay = document.getElementById("pityDisplay");  
   
 const xpBar = document.getElementById("xpBar");  
@@ -574,6 +614,27 @@ function generateRolls() {
 
     saveRollData(rolls);
   }
+}
+
+function showRollAnimation(rarity) {
+
+  rollAnimation.className = "rollReveal";
+
+  const symbols = {
+    Common:"⚪",
+    Rare:"🔵",
+    Epic:"🟣",
+    Legendary:"🌟"
+  };
+
+  rollAnimation.innerHTML =
+    `${symbols[rarity]} ${rarity} ${symbols[rarity]}`;
+
+  rollAnimation.style.opacity = "1";
+
+  setTimeout(() => {
+    rollAnimation.style.opacity = "0";
+  },1000);
 }
 
 function updateRollTimerUI() {
@@ -845,14 +906,21 @@ rollBtn.onclick = async () => {
   saveRollData(rollData);
   updateRollUI();
   isRolling = true;  
-  rollBtn.disabled = true;  
+  rollBtn.disabled = true; 
+  rollBtn.textContent = "✨ Summoning...";
   titleBtn.disabled = true;  
   resultDiv.innerHTML = "";  
   
   for (let i = 0; i < 10; i++) {  
     await new Promise(r => setTimeout(r, 250));  
   
-    const rarity = rollOnce();  
+    const rarity = rollOnce();
+
+    showRollAnimation("???");
+
+    await new Promise(r => setTimeout(r, 700));
+
+    showRollAnimation(rarity);
     const xp = xpValues[rarity];  
     const reward = getReward(rarity);  
     const pity = getPity();  
@@ -893,8 +961,9 @@ rollBtn.onclick = async () => {
     }  
   }  
   
-  rollBtn.disabled = false;  
-  titleBtn.disabled = false;  
+  rollBtn.disabled = false;
+  rollBtn.textContent = "🎲 Roll 10";
+  titleBtn.disabled = false;
   isRolling = false;  
 };  
   
