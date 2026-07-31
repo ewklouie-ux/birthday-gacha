@@ -350,6 +350,11 @@ const rollTimerDisplay = document.getElementById("rollTimerDisplay");
 
 const EVENT_START = new Date("2026-07-01T00:00:00");
 const EVENT_END = new Date("2026-08-03T23:59:59");
+
+function isEventActive() {
+  const now = new Date();
+  return now >= EVENT_START && now <= EVENT_END;
+}
   
 function updateTitleUI() {
   const unlocked = getUnlockedTitles();
@@ -372,11 +377,6 @@ const TITLES = [
 const TITLE_KEY = "birthday_titles_unlocked";
 function getUnlockedTitles() {
   return JSON.parse(localStorage.getItem(TITLE_KEY)) || [];
-}
-
-function isEventActive() {
-  const now = new Date();
-  return now >= EVENT_START && now <= EVENT_END;
 }
   
 function checkTitles() {
@@ -804,6 +804,18 @@ function updateRollUI() {
     document.getElementById("rollDisplay").textContent =
         `Rolls Available: ${rolls.available}`;
 }
+
+function updateEventUI() {
+
+  if (isEventActive()) {
+    rollBtn.disabled = false;
+    rollBtn.textContent = "🎲 Roll 10";
+  } else {
+    rollBtn.disabled = true;
+    rollBtn.textContent = "🔒 Banner Closed";
+  }
+
+}
   
 initializeEvent();
 generateRolls();
@@ -814,14 +826,14 @@ updateRollUI();
 updateRollTimerUI();
 updateXPUI();
 checkDailyLogin();
-
+updateEventUI();
   
 /* ROLL */  
 rollBtn.onclick = async () => {
   const rollData = getRollData();
 
   if (!isEventActive()) {
-    alert("The birthday banner is not active yet!");
+    alert("🎂 Birthday Banner is not active right now!");
     return;
   }
   if (rollData.available < 10) {
