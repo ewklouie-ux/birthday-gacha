@@ -466,7 +466,13 @@ const STORAGE_KEY = "birthday_roll_log";
 const PITY_KEY = "birthday_pity";  
 const XP_KEY = "birthday_total_xp";
 const ROLLS_KEY = "birthday_available_rolls";
-  
+const EVENT_CONFIG = {
+  startRolls: 30,
+  rollsPerInterval: 10,
+  intervalHours: 12,
+  maxRolls: 150
+};
+
 /* TITLE */  
 function showTitle() {  
   bannerSplash.style.display = "flex";  
@@ -501,8 +507,10 @@ function savePity(p) {
 
 function getRollData() {
   return JSON.parse(localStorage.getItem(ROLLS_KEY)) || {
-    available: 500,
-    lastGenerated: Date.now()
+    available: 30,
+    max: 150,
+    lastGenerated: Date.now(),
+    eventStarted: false
   };
 }
 
@@ -510,6 +518,50 @@ function saveRollData(data) {
   localStorage.setItem(ROLLS_KEY, JSON.stringify(data));
 }
   
+function initializeEvent() {
+  const rolls = getRollData();
+
+  if (!rolls.eventStarted) {
+
+    rolls.available = EVENT_CONFIG.startRolls;
+    rolls.max = EVENT_CONFIG.maxRolls;
+    rolls.lastGenerated = Date.now();
+    rolls.eventStarted = true;
+
+    saveRollData(rolls);
+  }
+}
+
+function generateRolls() {
+
+  const rolls = getRollData();
+
+  const now = Date.now();
+
+  const interval =
+    EVENT_CONFIG.intervalHours * 60 * 60 * 1000;
+
+  const elapsed = now - rolls.lastGenerated;
+
+  const gained =
+    Math.floor(elapsed / interval)
+    * EVENT_CONFIG.rollsPerInterval;
+
+
+  if (gained > 0) {
+
+    rolls.available = Math.min(
+      rolls.available + gained,
+      rolls.max
+    );
+
+    rolls.lastGenerated =
+      now - (elapsed % interval);
+
+    saveRollData(rolls);
+  }
+}
+
 /* XP STORAGE */  
 function getTotalXP() {  
   return JSON.parse(localStorage.getItem(XP_KEY)) || 0;  
@@ -690,6 +742,9 @@ function updateRollUI() {
         `Rolls Available: ${rolls.available}`;
 }
   
+initializeEvent();
+generateRolls();
+
 updatePityUI();
 updateRollUI();
 updateXPUI();
