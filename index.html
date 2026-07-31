@@ -256,18 +256,6 @@ button:disabled {
   z-index: 4500;
   transition: opacity 0.4s ease;
 }
-
-function getRollData() {
-  return JSON.parse(localStorage.getItem(ROLLS_KEY)) || {
-    available: 500,
-    lastGenerated: Date.now()
-  };
-}
-
-function saveRollData(data) {
-  localStorage.setItem(ROLLS_KEY, JSON.stringify(data));
-}
-
 </style> 
 
 </head>  <body>  <div id="bannerSplash">  
@@ -510,6 +498,17 @@ function getPity() {
 function savePity(p) {  
   localStorage.setItem(PITY_KEY, JSON.stringify(p));  
 }  
+
+function getRollData() {
+  return JSON.parse(localStorage.getItem(ROLLS_KEY)) || {
+    available: 500,
+    lastGenerated: Date.now()
+  };
+}
+
+function saveRollData(data) {
+  localStorage.setItem(ROLLS_KEY, JSON.stringify(data));
+}
   
 /* XP STORAGE */  
 function getTotalXP() {  
