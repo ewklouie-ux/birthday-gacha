@@ -1010,17 +1010,23 @@ rollBtn.onclick = async () => {
   
     const rarity = rollOnce();
 
-    showRollAnimation("Unknown");
+  if (rarity === "Legendary") {
+
+        showRollAnimation("Unknown");
     
-    await new Promise(r => setTimeout(r, 1200));
+        await new Promise(r => setTimeout(r, 1200));
     
-    showRollAnimation(rarity);
+        showRollAnimation(rarity);
     
-    if(rarity === "Legendary"){
         await new Promise(r => setTimeout(r, 2500));
+    
     }
-    else{
-        await new Promise(r => setTimeout(r, 900));
+    else {
+    
+        showRollAnimation(rarity);
+    
+        await new Promise(r => setTimeout(r, 700));
+    
     }
     const xp = xpValues[rarity];  
     const reward = getReward(rarity);  
