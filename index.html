@@ -257,6 +257,16 @@ button:disabled {
   transition: opacity 0.4s ease;
 }
 
+function getRollData() {
+  return JSON.parse(localStorage.getItem(ROLLS_KEY)) || {
+    available: 500,
+    lastGenerated: Date.now()
+  };
+}
+
+function saveRollData(data) {
+  localStorage.setItem(ROLLS_KEY, JSON.stringify(data));
+}
 
 </style> 
 
@@ -275,7 +285,10 @@ button:disabled {
     <span id="levelText">Level 1</span>  
     <span id="xpText">0 / 1000 XP</span>  
   </div>
-  
+  <div
+    id="rollDisplay"
+    style="opacity:.8;font-size:.9rem;margin-bottom:6px;">
+  </div>
   <div id="xpContainer">  
     <div id="xpBar"></div>  
   </div>    <div id="pityDisplay" style="opacity:.7;font-size:.85rem;margin-bottom:6px;"></div>  
@@ -463,7 +476,8 @@ function xpForLevel(level) {
 /* STORAGE KEYS */  
 const STORAGE_KEY = "birthday_roll_log";  
 const PITY_KEY = "birthday_pity";  
-const XP_KEY = "birthday_total_xp";  
+const XP_KEY = "birthday_total_xp";
+const ROLLS_KEY = "birthday_available_rolls";
   
 /* TITLE */  
 function showTitle() {  
@@ -669,9 +683,17 @@ function getReward(rarity) {
 function updatePityUI() {  
   pityDisplay.textContent = `Legendary Pity: ${getPity().legendary} / 90`;  
 }  
+
+function updateRollUI() {
+    const rolls = getRollData();
+
+    document.getElementById("rollDisplay").textContent =
+        `Rolls Available: ${rolls.available}`;
+}
   
-updatePityUI();  
-updateXPUI();  
+updatePityUI();
+updateRollUI();
+updateXPUI();
 checkDailyLogin();
 
   
